@@ -1,37 +1,52 @@
 package com.example.digitalmeasuringtape;
 
 import android.app.Activity;
-import android.content.Intent;
+import android.app.ProgressDialog;
 import android.os.Bundle;
-import android.view.Menu;
+import android.os.Handler;
+import android.os.Message;
+import android.view.KeyEvent;
 import android.view.View;
-import android.widget.EditText;
+import android.widget.TextView;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements Runnable{
 
-	public final static String EXTRA_MESSAGE = "com.exmaple.digitalmeasuringtape.MESSAGE";
+	private String pi_string;
+	private TextView tv;
+	private ProgressDialog pd;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
+		
+		tv = (TextView) this.findViewById(R.id.text);
+		tv.setText("--");
+		
 	}
 	
-	//called when the user clicks the Send button
-	public void sendMessage(View view){
-		//Do something
-		Intent intent = new Intent(this, DisplayMessageActivity.class);
-		//EditText editText = (EditText) findViewById(R.id.edit_message);
-		//String message = editText.getText().toString();
-		//intent.putExtra(EXTRA_MESSAGE, message);
-		//startActivity(intent);
+	//connected to button's onClick
+	public void record_measurements(View view){
+		pd = ProgressDialog.show(this, "Working..", "Calculating Pi", true, false);
+		Thread thread = new Thread(this);
+		thread.start();
 	}
+	
+	//put the code to be run during execution here
+	public void run(){
+		pi_string = (Math.floor((Math.random()*5)+2))+ "\"";
+		//signal the outside world
+		handler.sendEmptyMessage(0);
+	}
+	
+	//Receive thread messages, interpret them and act as needed
+	private Handler handler = new Handler(){
+		@Override
+		public void handleMessage(Message mg){
+			pd.dismiss();
+			tv.setText(pi_string);
+		}
+	};
+	
 
 }

@@ -5,16 +5,17 @@
     android:orientation="vertical" >
 
     <Button
+        android:id="@+id/button1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="40dip"
-        android:textSize="50sp"
         android:layout_below="@+id/text"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="32dp"
-        android:onClick="sendMessage"
+        android:background="#7cfc00"
+        android:onClick="record_measurements"
+        android:padding="40dip"
         android:text="@string/button_send"
-        android:background="#7cfc00" />
+        android:textSize="50sp" />
 
     <RadioGroup
         android:id="@+id/radioGroup1"

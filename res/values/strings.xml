@@ -9,6 +9,6 @@
     <string name="hello_world">Hello world!</string>
     <string name="measurement">1\' 2\"</string>
     <string name="mode0">Distance Mode</string>
-    <string name="mode1">Other Mode</string>
+    <string name="mode1">Path Mode</string>
 
 </resources>
