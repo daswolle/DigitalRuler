@@ -11,7 +11,7 @@
         android:layout_below="@+id/text"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="32dp"
-        android:background="#7cfc00"
+        android:background="@drawable/custom_button_green"
         android:onClick="record_measurements"
         android:padding="40dip"
         android:text="@string/button_send"
