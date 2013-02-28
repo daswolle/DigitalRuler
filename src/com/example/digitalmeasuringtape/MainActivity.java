@@ -1,22 +1,19 @@
 package com.example.digitalmeasuringtape;
 
 import java.util.ArrayList;
+
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
-
-import java.util.*;
-import java.io.*;
 
 public class MainActivity extends Activity implements Runnable{
 
