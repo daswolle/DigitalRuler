@@ -1,5 +1,6 @@
 package com.example.digitalmeasuringtape;
 
+import java.util.ArrayList;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.os.Bundle;
