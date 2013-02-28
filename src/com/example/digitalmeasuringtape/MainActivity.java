@@ -2,6 +2,11 @@ package com.example.digitalmeasuringtape;
 
 import java.util.ArrayList;
 import android.app.Activity;
+import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.os.Handler;
@@ -10,12 +15,19 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 
+import java.util.*;
+import java.io.*;
+
 public class MainActivity extends Activity implements Runnable{
 
 	private String pi_string;
 	private TextView tv;
 	private ProgressDialog pd;
 	private boolean activeThread = true;
+	private SensorManager mSensorManager;
+	private Sensor mAccelerometer;
+	public myLL measurements;
+	public Object semaphore;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -24,7 +36,11 @@ public class MainActivity extends Activity implements Runnable{
 		
 		tv = (TextView) this.findViewById(R.id.text);
 		tv.setText("--");
-
+		
+		//setting up sensor managers
+		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+		semaphore = new Object();
 		
 	}
 	
@@ -38,20 +54,34 @@ public class MainActivity extends Activity implements Runnable{
 	
 	//put the code to be run during execution here
 	public void run(){
-		while (activeThread){
-			pi_string = (Math.floor((Math.random()*5)+2))+ "\"";
-			//signal the outside world
-			handler.sendEmptyMessage(0);
-		}
+		
+		//make a fresh list, register listener
+		measurements = new myLL();
+		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);	
+		
+		//Wait until measuring is stopped. In the mean time,
+		//onSensorChanged events should be firing and measuring.
+		while(activeThread)
+			semaphore.wait();
+		
+		//stop measuring
+		mSensorManager.unregisterListener(this);
+		
+		return Distance(measurements.getxData(), 
+						measurements.getyData(),
+						measurements.getzData(),
+						measurements.gettData());
+		
 	}
 	
 	// manages user touching the screen
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+        if (activeThread && event.getAction() == MotionEvent.ACTION_DOWN) {
             // we set the activeThread boolean to false,
             // forcing the loop from the Thread to end
             activeThread = false;
+            semaphore.notify();
         }
         return super.onTouchEvent(event);
     }
@@ -179,5 +209,13 @@ public class MainActivity extends Activity implements Runnable{
 	return 0; //won't get here.
 }
 	
+	public void onSensorChanged(SensorEvent event) {
+		
+		float x = event.values[0];
+		float y = event.values[1];
+		float z = event.values[2];
+		measurements.add(x, y, z, System.currentTimeMillis()); //record values.
+		
+	}
 
 }
