@@ -7,6 +7,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -15,7 +16,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 
-public class MainActivity extends Activity implements Runnable{
+public class MainActivity extends Activity implements Runnable, SensorEventListener{
 
 	private String pi_string;
 	private TextView tv;
@@ -91,6 +92,11 @@ public class MainActivity extends Activity implements Runnable{
 			tv.setText(pi_string);
 		}
 	};
+	
+	@Override
+	public void onAccuracyChanged(Sensor arg0, int arg1){
+		//TODO
+	}
 	
 	public static double Distance(	ArrayList<Double> x_accel, 
 									ArrayList<Double> y_accel, 
