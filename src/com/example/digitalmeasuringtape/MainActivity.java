@@ -216,5 +216,84 @@ public class MainActivity extends Activity implements Runnable{
 		measurements.add(x, y, z, System.currentTimeMillis()); //record values.
 		
 	}
+	
+	public class myLL {
+		  public node head;
+		  public node tail;
+		  
+		  public myLL() {
+			  node temp = new node(0,0,0,0);
+			  head = temp;
+			  tail = temp;
+		  }
+		  
+		  public myLL(node firstNode) {
+		   head = firstNode;
+		   tail = firstNode;
+		  }
+		  
+		  public void add(float x, float y, float z, long time) {
+		   node newNode = new node(x, y, z, time);
+		   tail.next = newNode;
+		   tail = newNode;
+		  }
+		  	  
+		  public ArrayList<Float> getxData() {
+		   ArrayList<Float> xData = new ArrayList<Float>();
+		   node trav = head;
+		   while(trav.next != null) {
+		    xData.add(trav.x);
+		    trav = trav.next;
+		   }
+		   return xData;
+		  }
+		  
+		  public ArrayList<Float> getyData() {
+		   ArrayList<Float> yData = new ArrayList<Float>();
+		   node trav = head;
+		   while(trav.next != null) {
+		    yData.add(trav.y);
+		    trav = trav.next;
+		   }
+		   return yData;
+		  }
+		  
+		  public ArrayList<Float> getzData() {
+		   ArrayList<Float> zData = new ArrayList<Float>();
+		   node trav = head;
+		   while(trav.next != null) {
+			   zData.add(trav.z);
+			   trav = trav.next;
+		   }
+		   return zData;
+		  	}
+		  
+		  public ArrayList<Float> gettData() {
+			ArrayList<Float> tData = new ArrayList<Float>();
+			node trav = head;
+			while(trav.next != null) {
+				tData.add((float) trav.time); //i dont know if its ok to cast a long as a float...
+			}
+			return tData;
+		  }
+		  
+		  private class node {
+		  	public float x;
+		  	public float y;
+		  	public float z;
+		  	public long time;
+		  	public node next;
+		  
+		 	 public node(float newX, float newY, float newZ, long newTime) {
+		   		x = newX;
+		   		y = newY;
+		   		z = newZ;
+			   time = newTime;
+			   next = null;
+			  }
+		  
+		 }
+		  
+		 }
 
 }
