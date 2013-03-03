@@ -27,6 +27,9 @@ public class MainActivity extends Activity implements Runnable{
 	private Sensor mAccelerometer;
 	public myLL measurements;
 	public Object semaphore;
+	public CountDownLatch gate; //things call gate.await(), and get blocked.
+								//things become unblocked when gate.countDown()
+								//is called enough times, which will be 1
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -44,24 +47,25 @@ public class MainActivity extends Activity implements Runnable{
 	}
 	
 	//connected to button's onClick
-	public void record_measurements(View view){
+	public void start_distance_process(View view){
 		//false below is for cancleable; may need to change
 		pd = ProgressDialog.show(this, "Working..", "Calculating", true, false);
 		Thread thread = new Thread(this);
 		thread.start();
 	}
 	
-	//put the code to be run during execution here
+	//put the code to be run during execution here.
+	//this can be thought of as the main method of our thread.
 	public void run(){
 		
-		//make a fresh list, register listener
+		//make a fresh list, set gate as closed, register listener
 		measurements = new myLL();
+		gate = new CountDownLatch(1);
 		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);	
-		
-		//Wait until measuring is stopped. In the mean time,
+			
+		//Wait until the stop-measuring-signal. In the mean time,
 		//onSensorChanged events should be firing and measuring.
-		while(activeThread)
-			semaphore.wait();
+		gate.await();
 		
 		//stop measuring
 		mSensorManager.unregisterListener(this);
@@ -70,18 +74,21 @@ public class MainActivity extends Activity implements Runnable{
 						measurements.getyData(),
 						measurements.getzData(),
 						measurements.gettData());
-		
-	}
+		}
+	
 	
 	// manages user touching the screen
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        
         if (activeThread && event.getAction() == MotionEvent.ACTION_DOWN) {
             // we set the activeThread boolean to false,
             // forcing the loop from the Thread to end
             activeThread = false;
-            semaphore.notify();
+            gate.countDown(); //causes the thread's "run" method to contine.
+            					//"opens the gate"
         }
+        
         return super.onTouchEvent(event);
     }
 	
@@ -94,23 +101,23 @@ public class MainActivity extends Activity implements Runnable{
 		}
 	};
 	
-	public static double Distance(	ArrayList<Double> x_accel, 
-									ArrayList<Double> y_accel, 
-									ArrayList<Double> z_accel,
-									ArrayList<Double> t)
+	public static double Distance(	ArrayList<Float> x_accel, 
+									ArrayList<Float> y_accel, 
+									ArrayList<Float> z_accel,
+									ArrayList<Float> t)
 	{
 		//This is the Euclid's method.
-		ArrayList<Double> dx_veloc = new ArrayList<Double>(); dx_veloc.add(0.0);
-		ArrayList<Double> dy_veloc = new ArrayList<Double>(); dy_veloc.add(0.0);
-		ArrayList<Double> dz_veloc = new ArrayList<Double>(); dz_veloc.add(0.0);
+		ArrayList<Float> dx_veloc = new ArrayList<Float>(); dx_veloc.add(0f);
+		ArrayList<Float> dy_veloc = new ArrayList<Float>(); dy_veloc.add(0f);
+		ArrayList<Float> dz_veloc = new ArrayList<Float>(); dz_veloc.add(0f);
 		
-		ArrayList<Double> x_veloc = new ArrayList<Double>(); x_veloc.add(0.0);
-		ArrayList<Double> y_veloc = new ArrayList<Double>(); y_veloc.add(0.0);
-		ArrayList<Double> z_veloc = new ArrayList<Double>(); z_veloc.add(0.0);
+		ArrayList<Float> x_veloc = new ArrayList<Float>(); x_veloc.add(0f);
+		ArrayList<Float> y_veloc = new ArrayList<Float>(); y_veloc.add(0f);
+		ArrayList<Float> z_veloc = new ArrayList<Float>(); z_veloc.add(0f);
 		
 		//compose velocity
 		int I = x_accel.size();
-		double dt;
+		float dt;
 		System.out.println("Composing Velocity...\n");
 		for( int i = 1; i < I; i++ )
 		{	
@@ -123,34 +130,34 @@ public class MainActivity extends Activity implements Runnable{
 			dz_veloc.add(  z_accel.get(i-1) * dt);
 			System.out.println("Step: " + i + "\n\tv_x: "+ dx_veloc.get(i) + "\n\tv_y: " + dy_veloc.get(i) + "\n\tv_z: " + dz_veloc.get(i));
 		}
-		double temp = 0;
-		for(double d : dx_veloc)
+		float temp = 0f;
+		for(float d : dx_veloc)
 			{
 				temp += d;
 				x_veloc.add(temp);
 			}
 		
 		temp = 0;
-		for(double d : dy_veloc)
+		for(float d : dy_veloc)
 			{
 				temp += d;
 				y_veloc.add(temp);
 			}
 		
 		temp = 0;
-		for(double d : dz_veloc)
+		for(float d : dz_veloc)
 			{
 				temp += d;
 				z_veloc.add(temp);
 			}
 		
-		ArrayList<Double> dx_disp = new ArrayList<Double>(); dx_disp.add(0.0); dx_disp.add(0.0);
-		ArrayList<Double> dy_disp = new ArrayList<Double>(); dy_disp.add(0.0); dy_disp.add(0.0);
-		ArrayList<Double> dz_disp = new ArrayList<Double>(); dz_disp.add(0.0); dz_disp.add(0.0);
+		ArrayList<Float> dx_disp = new ArrayList<Float>(); dx_disp.add(0f); dx_disp.add(0f);
+		ArrayList<Float> dy_disp = new ArrayList<Float>(); dy_disp.add(0f); dy_disp.add(0f);
+		ArrayList<Float> dz_disp = new ArrayList<Float>(); dz_disp.add(0f); dz_disp.add(0f);
 		
-		ArrayList<Double> x_disp = new ArrayList<Double>(); x_disp.add(0.0); x_disp.add(0.0);
-		ArrayList<Double> y_disp = new ArrayList<Double>(); y_disp.add(0.0); y_disp.add(0.0);
-		ArrayList<Double> z_disp = new ArrayList<Double>(); z_disp.add(0.0); z_disp.add(0.0);
+		ArrayList<Float> x_disp = new ArrayList<Float>(); x_disp.add(0f); x_disp.add(0f);
+		ArrayList<Float> y_disp = new ArrayList<Float>(); y_disp.add(0f); y_disp.add(0f);
+		ArrayList<Float> z_disp = new ArrayList<Float>(); z_disp.add(0f); z_disp.add(0f);
 		
 		//compose displacement
 		I = t.size();
@@ -166,13 +173,13 @@ public class MainActivity extends Activity implements Runnable{
 		}
 		
 		//compose total displacement
-		double distance = 0;
+		float distance = 0;
 
 		if( true/*Euclidean_Distance_Mode */)
 		{
 			//vector addition, constructing R
 			System.out.println("Composing R...\n");
-			double r[] = new double[3]; //[x, y, z]
+			float r[] = new float[3]; //[x, y, z]
 			for( int i = 0; i < I; i++)
 			{
 				r[0] += dx_disp.get(i);
