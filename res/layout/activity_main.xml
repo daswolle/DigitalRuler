@@ -12,7 +12,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="32dp"
         android:background="@drawable/custom_button_green"
-        android:onClick="record_measurements"
+        android:onClick="start_distance_process"
         android:padding="40dip"
         android:text="@string/button_send"
         android:textSize="50sp" />
