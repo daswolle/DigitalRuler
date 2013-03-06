@@ -4,19 +4,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <Button
-        android:id="@+id/button1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/text"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="32dp"
-        android:background="@drawable/custom_button_green"
-        android:onClick="start_distance_process"
-        android:padding="40dip"
-        android:text="@string/button_send"
-        android:textSize="50sp" />
-
     <RadioGroup
         android:id="@+id/radioGroup1"
         android:layout_width="wrap_content"
@@ -41,7 +28,7 @@
     </RadioGroup>
 
     <TextView
-        android:id="@+id/text"
+        android:id="@+id/text1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -49,5 +36,18 @@
         android:layout_marginTop="40dp"
         android:text="@string/measurement"
         android:textSize="100sp" />
+
+    <Button
+        android:id="@+id/button1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/text1"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="35dp"
+        android:background="@drawable/custom_button_green"
+        android:onClick="start_distance_process"
+        android:padding="40dip"
+        android:text="@string/button_send"
+        android:textSize="50sp" />
 
 </RelativeLayout>

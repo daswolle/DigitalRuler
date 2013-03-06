@@ -1,12 +1,16 @@
 package com.example.digitalmeasuringtape;
 
+import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
+
+import android.R;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -14,10 +18,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 
-import java.util.*;
-import java.io.*;
-
-public class MainActivity extends Activity implements Runnable{
+public class MainActivity extends Activity implements Runnable, SensorEventListener{
 
 	private String pi_string;
 	private TextView tv;
@@ -34,9 +35,9 @@ public class MainActivity extends Activity implements Runnable{
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+		setContentView(R.layout.activity_list_item);
 		
-		tv = (TextView) this.findViewById(R.id.text);
+		tv = (TextView) this.findViewById(R.id.text1);
 		tv.setText("--");
 		
 		//setting up sensor managers
@@ -65,15 +66,21 @@ public class MainActivity extends Activity implements Runnable{
 			
 		//Wait until the stop-measuring-signal. In the mean time,
 		//onSensorChanged events should be firing and measuring.
-		gate.await();
+		try {
+			gate.await();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		//stop measuring
 		mSensorManager.unregisterListener(this);
 		
-		return Distance(measurements.getxData(), 
+		double x = Distance(measurements.getxData(), 
 						measurements.getyData(),
 						measurements.getzData(),
 						measurements.gettData());
+		
 		}
 	
 	
@@ -101,6 +108,7 @@ public class MainActivity extends Activity implements Runnable{
 		}
 	};
 	
+	@SuppressWarnings("unused")
 	public static double Distance(	ArrayList<Float> x_accel, 
 									ArrayList<Float> y_accel, 
 									ArrayList<Float> z_accel,
@@ -190,7 +198,7 @@ public class MainActivity extends Activity implements Runnable{
 		
 			//Distance formula, constructing D
 			//D = sqrt(X^2 + Y^2 + Z^2)
-			distance = Math.sqrt( 
+			distance = (float) Math.sqrt( 
 							Math.pow(r[0], 2) + 
 							Math.pow(r[1], 2) +
 							Math.pow(r[2], 2)
@@ -302,5 +310,11 @@ public class MainActivity extends Activity implements Runnable{
 		 }
 		  
 		 }
+
+	@Override
+	public void onAccuracyChanged(Sensor arg0, int arg1) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }
