@@ -268,6 +268,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		float y = event.values[1];
 		float z = event.values[2];
 		pi_string = "x = " + x + "y = " + y + "z = " + z;
+		System.out.println(pi_string);
 		handler.sendEmptyMessage(0);
 		measurements.add(x, y, z, System.currentTimeMillis()); //record values.
 		
