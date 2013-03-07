@@ -52,6 +52,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	public void start_distance_process(View view){
 		//false below is for cancleable; may need to change
 		//pd = ProgressDialog.show(this, "Working..", "Sucking on balls...", true, false);
+		System.out.println("Started distance process.");
 		Thread thread = new Thread(this);
 		thread.start();
 	}
@@ -67,6 +68,8 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	//this can be thought of as the main method of our thread.
 	public void run(){
 		
+		System.out.println("Calling run()");
+		
 		//make a fresh list, set gate as closed, register listener
 		measurements = new myLL();
 		gate = new CountDownLatch(1);
@@ -74,14 +77,18 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 			
 		//Wait until the stop-measuring-signal. In the mean time,
 		//onSensorChanged events should be firing and measuring.
-		
+		/*
 		try {
 			gate.await();
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+		*/
+		System.out.println("Before while");
+		while(activeThread)
+		{}
+		System.out.println("After while");
 		
 		//stop measuring
 		mSensorManager.unregisterListener(this);
@@ -90,22 +97,23 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 						measurements.getyData(),
 						measurements.getzData(),
 						measurements.gettData());
-		
-		tv.setText(Double.valueOf(x).toString());
+		pi_string = (Double.valueOf(x).toString());
+		handler.sendEmptyMessage(0);
 		//pd.dismiss();
-		
+		System.out.println("returning from run()");
 		}
 	
 	
 	// manages user touching the screen
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        
+        System.out.println("onTouchEvent fired");
+    	
         if (activeThread && event.getAction() == MotionEvent.ACTION_DOWN) {
             // we set the activeThread boolean to false,
             // forcing the loop from the Thread to end
             activeThread = false;
-            gate.countDown(); //causes the thread's "run" method to contine.
+           // gate.countDown(); //causes the thread's "run" method to contine.
             					//"opens the gate"
         }
         
@@ -251,6 +259,8 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 }
 	
 	public void onSensorChanged(SensorEvent event) {
+		
+		System.out.println("Sensor changed");
 		
 		float x = event.values[0];
 		float y = event.values[1];
