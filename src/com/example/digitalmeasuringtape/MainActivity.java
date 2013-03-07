@@ -138,7 +138,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	private Handler handler = new Handler(){
 		@Override
 		public void handleMessage(Message mg){
-			pd.dismiss();
+			//pd.dismiss();
 			tv.setText(pi_string);
 		}
 	};
@@ -149,6 +149,8 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 									ArrayList<Float> z_accel,
 									ArrayList<Float> t)
 	{
+		System.out.println("Entering Distance method");
+		
 		//This is the Euclid's method.
 		ArrayList<Float> dx_veloc = new ArrayList<Float>(); dx_veloc.add(0f);
 		ArrayList<Float> dy_veloc = new ArrayList<Float>(); dy_veloc.add(0f);
@@ -291,6 +293,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		  }
 		  	  
 		  public ArrayList<Float> getxData() {
+		   System.out.println("Entering getxData");
 		   ArrayList<Float> xData = new ArrayList<Float>();
 		   node trav = head;
 		   while(trav.next != null) {
@@ -301,6 +304,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		  }
 		  
 		  public ArrayList<Float> getyData() {
+			  System.out.println("Entering getyData");
 		   ArrayList<Float> yData = new ArrayList<Float>();
 		   node trav = head;
 		   while(trav.next != null) {
@@ -311,6 +315,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		  }
 		  
 		  public ArrayList<Float> getzData() {
+			  System.out.println("Entering getzData");
 		   ArrayList<Float> zData = new ArrayList<Float>();
 		   node trav = head;
 		   while(trav.next != null) {
@@ -321,10 +326,12 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		  	}
 		  
 		  public ArrayList<Float> gettData() {
+			  System.out.println("Entering gettData");
 			ArrayList<Float> tData = new ArrayList<Float>();
 			node trav = head;
 			while(trav.next != null) {
 				tData.add((float) trav.time); //i dont know if its ok to cast a long as a float...
+				trav = trav.next;
 			}
 			return tData;
 		  }
