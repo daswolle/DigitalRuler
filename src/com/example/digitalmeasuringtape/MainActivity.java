@@ -44,7 +44,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		
 		//setting up sensor managers
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
 		semaphore = new Object();
 		
 		
@@ -52,27 +52,25 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	
 	//connected to button's onClick
 	public void start_distance_process(View view){
-		
+		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		if (mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null){
-		
-		
-		//make me some dialog pancakes
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setPositiveButton("FINIZH", new DialogInterface.OnClickListener(){
-			public void onClick(DialogInterface dialog, int id){
-				//kill data collection
-				activeThread = false;
-			}
-		});
-		builder.setMessage("WERKING").setTitle("TWERKING");
-		AlertDialog dialog = builder.create();
-		
-		//slap dat dialog on screen
-		dialog.show();
-		
-		System.out.println("Started distance process.");
-		Thread thread = new Thread(this);
-		thread.start();
+			//make me some dialog pancakes
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setPositiveButton("FINIZH", new DialogInterface.OnClickListener(){
+				public void onClick(DialogInterface dialog, int id){
+					//kill data collection
+					activeThread = false;
+				}
+			});
+			builder.setMessage("WERKING").setTitle("TWERKING");
+			AlertDialog dialog = builder.create();
+			
+			//slap dat dialog on screen
+			dialog.show();
+			
+			System.out.println("Started distance process.");
+			Thread thread = new Thread(this);
+			thread.start();
 		}
 		else{
 			//Y U NO ACCELEROMETER?
