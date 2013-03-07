@@ -52,24 +52,42 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	
 	//connected to button's onClick
 	public void start_distance_process(View view){
-		//false below is for cancleable; may need to change
-		//pd = ProgressDialog.show(this, "Working..", "Sucking on balls...", true, false);
 		
+		if (mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null){
+		
+		
+		//make me some dialog pancakes
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setPositiveButton("FINIZH", new DialogInterface.OnClickListener(){
 			public void onClick(DialogInterface dialog, int id){
-				//TODO when user clicks
+				//kill data collection
 				activeThread = false;
 			}
 		});
 		builder.setMessage("WERKING").setTitle("TWERKING");
 		AlertDialog dialog = builder.create();
 		
+		//slap dat dialog on screen
 		dialog.show();
 		
 		System.out.println("Started distance process.");
 		Thread thread = new Thread(this);
 		thread.start();
+		}
+		else{
+			//Y U NO ACCELEROMETER?
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setPositiveButton("Ok", new DialogInterface.OnClickListener(){
+				public void onClick(DialogInterface dialog, int id){
+					//dismiss dialog
+				}
+			});
+			builder.setMessage("You do not have an accelerometer!").setTitle("Sorry, eh");
+			AlertDialog dialog = builder.create();
+			
+			//slap dat dialog on screen
+			dialog.show();
+		}
 	}
 
 	@Override
