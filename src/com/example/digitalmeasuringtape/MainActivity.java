@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -52,6 +54,19 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	public void start_distance_process(View view){
 		//false below is for cancleable; may need to change
 		//pd = ProgressDialog.show(this, "Working..", "Sucking on balls...", true, false);
+		
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setPositiveButton("FINIZH", new DialogInterface.OnClickListener(){
+			public void onClick(DialogInterface dialog, int id){
+				//TODO when user clicks
+				activeThread = false;
+			}
+		});
+		builder.setMessage("WERKING").setTitle("TWERKING");
+		AlertDialog dialog = builder.create();
+		
+		dialog.show();
+		
 		System.out.println("Started distance process.");
 		Thread thread = new Thread(this);
 		thread.start();
