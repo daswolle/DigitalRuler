@@ -74,12 +74,14 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 			
 		//Wait until the stop-measuring-signal. In the mean time,
 		//onSensorChanged events should be firing and measuring.
+		/*
 		try {
 			gate.await();
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		*/
 		
 		//stop measuring
 		mSensorManager.unregisterListener(this);
