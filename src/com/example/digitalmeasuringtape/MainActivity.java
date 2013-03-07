@@ -51,7 +51,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	//connected to button's onClick
 	public void start_distance_process(View view){
 		//false below is for cancleable; may need to change
-		pd = ProgressDialog.show(this, "Working..", "Calculating", true, false);
+		//pd = ProgressDialog.show(this, "Working..", "Sucking on balls...", true, false);
 		Thread thread = new Thread(this);
 		thread.start();
 	}
@@ -74,14 +74,14 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 			
 		//Wait until the stop-measuring-signal. In the mean time,
 		//onSensorChanged events should be firing and measuring.
-		/*
+		
 		try {
 			gate.await();
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		*/
+		
 		
 		//stop measuring
 		mSensorManager.unregisterListener(this);
@@ -91,12 +91,29 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 						measurements.getzData(),
 						measurements.gettData());
 		
+		tv.setText(Double.valueOf(x).toString());
+		//pd.dismiss();
+		
 		}
 	
 	
 	// manages user touching the screen
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        
+        if (activeThread && event.getAction() == MotionEvent.ACTION_DOWN) {
+            // we set the activeThread boolean to false,
+            // forcing the loop from the Thread to end
+            activeThread = false;
+            gate.countDown(); //causes the thread's "run" method to contine.
+            					//"opens the gate"
+        }
+        
+        return super.onTouchEvent(event);
+    }
+    
+	// manages user touching the screen
+    public boolean stopMeasuring(MotionEvent event) {
         
         if (activeThread && event.getAction() == MotionEvent.ACTION_DOWN) {
             // we set the activeThread boolean to false,
