@@ -3,7 +3,6 @@ package com.example.digitalmeasuringtape;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
-import android.R;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -14,6 +13,7 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
@@ -35,7 +35,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_list_item);
+		setContentView(R.layout.activity_main);
 		
 		tv = (TextView) this.findViewById(R.id.text1);
 		tv.setText("--");
@@ -45,6 +45,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		semaphore = new Object();
 		
+		
 	}
 	
 	//connected to button's onClick
@@ -53,6 +54,13 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		pd = ProgressDialog.show(this, "Working..", "Calculating", true, false);
 		Thread thread = new Thread(this);
 		thread.start();
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.main, menu);
+		return true;
 	}
 	
 	//put the code to be run during execution here.
