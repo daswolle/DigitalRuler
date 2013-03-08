@@ -1,7 +1,9 @@
 package com.example.digitalmeasuringtape;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import android.util.FloatMath;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -28,12 +30,17 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	private boolean activeThread = true;
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer;
-	public myLL measurements;
+	public TailLinkedList measurements;
 	public Object semaphore;
 	public CountDownLatch gate; //things call gate.await(), and get blocked.
 								//things become unblocked when gate.countDown()
 								//is called enough times, which will be 1
 	
+	protected void onExit()
+	{
+		if(mSensorManager != null)
+			mSensorManager.unregisterListener(this);
+	}
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -44,7 +51,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		
 		//setting up sensor managers
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		semaphore = new Object();
 		
 		
@@ -52,40 +59,26 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	
 	//connected to button's onClick
 	public void start_distance_process(View view){
-		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-		if (mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null){
-			//make me some dialog pancakes
-			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setPositiveButton("FINIZH", new DialogInterface.OnClickListener(){
-				public void onClick(DialogInterface dialog, int id){
-					//kill data collection
-					activeThread = false;
-				}
-			});
-			builder.setMessage("WERKING").setTitle("TWERKING");
-			AlertDialog dialog = builder.create();
-			
-			//slap dat dialog on screen
-			dialog.show();
-			
-			System.out.println("Started distance process.");
-			Thread thread = new Thread(this);
-			thread.start();
-		}
-		else{
-			//Y U NO ACCELEROMETER?
-			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setPositiveButton("Ok", new DialogInterface.OnClickListener(){
-				public void onClick(DialogInterface dialog, int id){
-					//dismiss dialog
-				}
-			});
-			builder.setMessage("You do not have an accelerometer!").setTitle("Sorry, eh");
-			AlertDialog dialog = builder.create();
-			
-			//slap dat dialog on screen
-			dialog.show();
-		}
+		//false below is for cancleable; may need to change
+		//pd = ProgressDialog.show(this, "Working..", "Sucking on balls...", true, false);
+		
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setPositiveButton("FINIZH", new DialogInterface.OnClickListener(){
+			public void onClick(DialogInterface dialog, int id){
+				//TODO when user clicks
+				activeThread = false;
+				if(gate!=null)
+	            	gate.countDown(); 	
+			}
+		});
+		builder.setMessage("WERKING").setTitle("TWERKING");
+		AlertDialog dialog = builder.create();
+		
+		dialog.show();
+		
+		System.out.println("Started distance process.");
+		Thread thread = new Thread(this);
+		thread.start();
 	}
 
 	@Override
@@ -102,35 +95,48 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		System.out.println("Calling run()");
 		
 		//make a fresh list, set gate as closed, register listener
-		measurements = new myLL();
+		measurements = new TailLinkedList();
 		gate = new CountDownLatch(1);
-		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);	
-			
+		boolean worked = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);	
+		System.out.println("Return from registerlistener: " + worked);
+		List<Sensor> l = mSensorManager.getSensorList(Sensor.TYPE_ALL);
+		for(Sensor s : l)
+			System.out.println(s.getName());
 		//Wait until the stop-measuring-signal. In the mean time,
 		//onSensorChanged events should be firing and measuring.
-		/*
+		
 		try {
 			gate.await();
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		*/
+		/*
 		System.out.println("Before while");
 		while(activeThread)
 		{}
 		System.out.println("After while");
-		
+		*/
 		//stop measuring
 		mSensorManager.unregisterListener(this);
 		
-		double x = Distance(measurements.getxData(), 
+		double d = Distance(measurements.getxData(), 
 						measurements.getyData(),
 						measurements.getzData(),
 						measurements.gettData());
-		pi_string = (Double.valueOf(x).toString());
+		
+		//d.toString(), then truncate to two decimal places
+		String truncate;
+		if(d == -1.0) truncate = "-1.0"; 
+		else
+		{
+			String d_str = Double.valueOf(d).toString(); 
+			truncate = d_str.substring(0, d_str.indexOf('.') + 3);
+		}
+		pi_string = truncate;
 		handler.sendEmptyMessage(0);
 		//pd.dismiss();
+		System.out.println(truncate);
 		System.out.println("returning from run()");
 		}
 	
@@ -144,8 +150,9 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
             // we set the activeThread boolean to false,
             // forcing the loop from the Thread to end
             activeThread = false;
-           // gate.countDown(); //causes the thread's "run" method to contine.
-            					//"opens the gate"
+            if(gate!=null)
+            	gate.countDown(); 	//causes the thread's "run" method to contine.
+            						//"opens the gate"
         }
         
         return super.onTouchEvent(event);
@@ -175,36 +182,42 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	};
 	
 	@SuppressWarnings("unused")
-	public static double Distance(	ArrayList<Float> x_accel, 
+	public static float Distance(	ArrayList<Float> x_accel, 
 									ArrayList<Float> y_accel, 
 									ArrayList<Float> z_accel,
 									ArrayList<Float> t)
 	{
+		if(t == null) return -1;
+		
 		System.out.println("Entering Distance method");
+		System.out.println("x: "+x_accel);
+		System.out.println("y: "+y_accel);
+		System.out.println("z: "+z_accel);
+		System.out.println("t: "+t);
 		
 		//This is the Euclid's method.
-		ArrayList<Float> dx_veloc = new ArrayList<Float>(); dx_veloc.add(0f);
-		ArrayList<Float> dy_veloc = new ArrayList<Float>(); dy_veloc.add(0f);
-		ArrayList<Float> dz_veloc = new ArrayList<Float>(); dz_veloc.add(0f);
+		ArrayList<Float> dx_veloc = new ArrayList<Float>(); 
+		ArrayList<Float> dy_veloc = new ArrayList<Float>();
+		ArrayList<Float> dz_veloc = new ArrayList<Float>();
 		
 		ArrayList<Float> x_veloc = new ArrayList<Float>(); x_veloc.add(0f);
 		ArrayList<Float> y_veloc = new ArrayList<Float>(); y_veloc.add(0f);
 		ArrayList<Float> z_veloc = new ArrayList<Float>(); z_veloc.add(0f);
 		
 		//compose velocity
-		int I = x_accel.size();
+		int I = t.size();
 		float dt;
-		System.out.println("Composing Velocity...\n");
-		for( int i = 1; i < I; i++ )
+		System.out.println("Composing Velocity from Acceleration...\n");
+		for( int i = 0; i < I-1; i++ )
 		{	
 			//x'_i = x''_(i-1) * dt
 			//y'_i = y''_(i-1) * dt
 			//z'_i = z''_(i-1) * dt
-			dt = t.get(i) - t.get(i-1);
-			dx_veloc.add(  x_accel.get(i-1) * dt);
-			dy_veloc.add(  y_accel.get(i-1) * dt);
-			dz_veloc.add(  z_accel.get(i-1) * dt);
-			System.out.println("Step: " + i + "\n\tv_x: "+ dx_veloc.get(i) + "\n\tv_y: " + dy_veloc.get(i) + "\n\tv_z: " + dz_veloc.get(i));
+			dt = t.get(i+1) - t.get(i);
+			dx_veloc.add(  x_accel.get(i) * dt);
+			dy_veloc.add(  y_accel.get(i) * dt);
+			dz_veloc.add(  z_accel.get(i) * dt);
+			System.out.println("Step: " + i + "\ndt: " + dt + "\n\tv_x:"+ dx_veloc.get(i) + "\n\tv_y: " + dy_veloc.get(i) + "\n\tv_z: " + dz_veloc.get(i));
 		}
 		float temp = 0f;
 		for(float d : dx_veloc)
@@ -227,25 +240,28 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 				z_veloc.add(temp);
 			}
 		
-		ArrayList<Float> dx_disp = new ArrayList<Float>(); dx_disp.add(0f); dx_disp.add(0f);
-		ArrayList<Float> dy_disp = new ArrayList<Float>(); dy_disp.add(0f); dy_disp.add(0f);
-		ArrayList<Float> dz_disp = new ArrayList<Float>(); dz_disp.add(0f); dz_disp.add(0f);
+		ArrayList<Float> dx_disp = new ArrayList<Float>();
+		ArrayList<Float> dy_disp = new ArrayList<Float>();
+		ArrayList<Float> dz_disp = new ArrayList<Float>();
 		
-		ArrayList<Float> x_disp = new ArrayList<Float>(); x_disp.add(0f); x_disp.add(0f);
-		ArrayList<Float> y_disp = new ArrayList<Float>(); y_disp.add(0f); y_disp.add(0f);
-		ArrayList<Float> z_disp = new ArrayList<Float>(); z_disp.add(0f); z_disp.add(0f);
+		ArrayList<Float> x_disp = new ArrayList<Float>(); x_disp.add(0f);
+		ArrayList<Float> y_disp = new ArrayList<Float>(); y_disp.add(0f);
+		ArrayList<Float> z_disp = new ArrayList<Float>(); z_disp.add(0f);
 		
 		//compose displacement
 		I = t.size();
-		for( int i = 2; i < I; i++ )
+		System.out.println("Composing Displacement from Velocity...\n");
+		for( int i = 0; i < I-1; i++ )
 		{	
 			//x_i = x'_(i-1) * dt
 			//y_i = y'_(i-1) * dt
 			//z_i = z'_(i-1) * dt
-			dt = t.get(i) - t.get(i-1);
-			dx_disp.add( x_veloc.get(i-1) * dt);
-			dy_disp.add( y_veloc.get(i-1) * dt);
-			dz_disp.add( z_veloc.get(i-1) * dt);
+			dt = t.get(i+1) - t.get(i);
+			dx_disp.add( x_veloc.get(i) * dt);
+			dy_disp.add( y_veloc.get(i) * dt);
+			dz_disp.add( z_veloc.get(i) * dt);
+			
+			System.out.println("Step: " + i + "\ndt: " + dt + "\n\td_x:"+ dx_disp.get(i) + "\n\td_y: " + dy_disp.get(i) + "\n\td_z: " + dz_disp.get(i));
 		}
 		
 		//compose total displacement
@@ -256,7 +272,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 			//vector addition, constructing R
 			System.out.println("Composing R...\n");
 			float r[] = new float[3]; //[x, y, z]
-			for( int i = 0; i < I; i++)
+			for( int i = 0; i < I-1; i++)
 			{
 				r[0] += dx_disp.get(i);
 				r[1] += dy_disp.get(i);
@@ -266,10 +282,10 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		
 			//Distance formula, constructing D
 			//D = sqrt(X^2 + Y^2 + Z^2)
-			distance = (float) Math.sqrt( 
-							Math.pow(r[0], 2) + 
-							Math.pow(r[1], 2) +
-							Math.pow(r[2], 2)
+			distance =  FloatMath.sqrt( 
+							(float)Math.pow(r[0], 2) + 
+							(float)Math.pow(r[1], 2) +
+							(float)Math.pow(r[2], 2)
 							);
 			return distance;
 		}
@@ -294,101 +310,16 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	public void onSensorChanged(SensorEvent event) {
 		
 		System.out.println("Sensor changed");
-		
-		float x = event.values[0];
+		float x = event.values[0]; 
 		float y = event.values[1];
 		float z = event.values[2];
-		pi_string = "x = " + x + "y = " + y + "z = " + z;
+		pi_string = "x = " + x + "\ny = " + y + "\nz = " + z;
 		System.out.println(pi_string);
 		handler.sendEmptyMessage(0);
 		measurements.add(x, y, z, System.currentTimeMillis()); //record values.
 		
 	}
 	
-	public class myLL {
-		  public node head;
-		  public node tail;
-		  
-		  public myLL() {
-			  node temp = new node(0,0,0,0);
-			  head = temp;
-			  tail = temp;
-		  }
-		  
-		  public myLL(node firstNode) {
-		   head = firstNode;
-		   tail = firstNode;
-		  }
-		  
-		  public void add(float x, float y, float z, long time) {
-		   node newNode = new node(x, y, z, time);
-		   tail.next = newNode;
-		   tail = newNode;
-		  }
-		  	  
-		  public ArrayList<Float> getxData() {
-		   System.out.println("Entering getxData");
-		   ArrayList<Float> xData = new ArrayList<Float>();
-		   node trav = head;
-		   while(trav.next != null) {
-		    xData.add(trav.x);
-		    trav = trav.next;
-		   }
-		   return xData;
-		  }
-		  
-		  public ArrayList<Float> getyData() {
-			  System.out.println("Entering getyData");
-		   ArrayList<Float> yData = new ArrayList<Float>();
-		   node trav = head;
-		   while(trav.next != null) {
-		    yData.add(trav.y);
-		    trav = trav.next;
-		   }
-		   return yData;
-		  }
-		  
-		  public ArrayList<Float> getzData() {
-			  System.out.println("Entering getzData");
-		   ArrayList<Float> zData = new ArrayList<Float>();
-		   node trav = head;
-		   while(trav.next != null) {
-			   zData.add(trav.z);
-			   trav = trav.next;
-		   }
-		   return zData;
-		  	}
-		  
-		  public ArrayList<Float> gettData() {
-			  System.out.println("Entering gettData");
-			ArrayList<Float> tData = new ArrayList<Float>();
-			node trav = head;
-			while(trav.next != null) {
-				tData.add((float) trav.time); //i dont know if its ok to cast a long as a float...
-				trav = trav.next;
-			}
-			return tData;
-		  }
-		  
-		  private class node {
-		  	public float x;
-		  	public float y;
-		  	public float z;
-		  	public long time;
-		  	public node next;
-		  
-		 	 public node(float newX, float newY, float newZ, long newTime) {
-		   		x = newX;
-		   		y = newY;
-		   		z = newZ;
-			   time = newTime;
-			   next = null;
-			  }
-		  
-		 }
-		  
-		 }
-
 	@Override
 	public void onAccuracyChanged(Sensor arg0, int arg1) {
 		// TODO Auto-generated method stub
