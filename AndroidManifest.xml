@@ -29,6 +29,10 @@
             android:name="com.example.digitalmeasuringtape.About"
             android:label="About" >
        </activity>
+       <activity
+           android:name="com.example.digitalmeasuringtape.Settings"
+           android:label="Settings" >
+       </activity>
     </application>
 
 </manifest>
