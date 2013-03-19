@@ -3,13 +3,13 @@ package com.example.digitalmeasuringtape;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import android.util.FloatMath;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -17,7 +17,9 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.FloatMath;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
@@ -54,7 +56,16 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		semaphore = new Object();
 		
+		//TODO tv.setText(mAccelerometer.getMinDelay());
 		
+		
+	}
+	
+	//temporary to make sure this app isn't the one draining my battery...
+	@Override
+	protected void onStop(){
+		super.onStop();
+		onDestroy();
 	}
 	
 	//connected to button's onClick
@@ -80,13 +91,27 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		Thread thread = new Thread(this);
 		thread.start();
 	}
-
+	
+/************menu stuff**************/
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item){
+		switch (item.getItemId()){
+//		case R.id.about_menuitem:
+//			startActivity(new Intent(this, About.class));
+		case R.id.settings_menuitem:
+			startActivity(new Intent(this, Settings.class));
+		}
+		return true;
+	}
+	
+/***********end menu stuff***********/	
 	
 	//put the code to be run during execution here.
 	//this can be thought of as the main method of our thread.
@@ -322,7 +347,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	
 	@Override
 	public void onAccuracyChanged(Sensor arg0, int arg1) {
-		// TODO Auto-generated method stub
+		System.out.println("onAccuracyChanged fired");
 		
 	}
 
