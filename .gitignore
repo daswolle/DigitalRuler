@@ -11,6 +11,3 @@
 *.jar
 *.war
 *.ear
-
-# STUPID BIN FOLDER #
-bin/
