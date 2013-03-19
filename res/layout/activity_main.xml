@@ -12,7 +12,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="40dp"
         android:text="@string/measurement"
-        android:textSize="100sp" />
+        android:textSize="50sp" />
 
     <Button
         android:id="@+id/button1"

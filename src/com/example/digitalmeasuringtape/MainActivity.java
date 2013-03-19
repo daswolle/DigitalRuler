@@ -34,11 +34,15 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	private boolean activeThread = true;
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer;
-	private Sensor mLinearAcceleration;
+	private Sensor mOrientation;
 	public TailLinkedList measurements;
+	public TailLinkedList angles;
 	public CountDownLatch gate; //things call gate.await(), and get blocked.
 								//things become unblocked when gate.countDown()
 								//is called enough times, which will be 1
+	private float calX = 0f;//.11492168f;
+	private float calY = 0f;//.49799395f;
+	private float calZ = 0f;//9.768343f;
 	
 	protected void onExit()
 	{
@@ -56,7 +60,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		//setting up sensor managers
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-		mLinearAcceleration = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+		mOrientation = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
 		//TODO tv.setText(mAccelerometer.getMinDelay());
 		
 		
@@ -121,9 +125,10 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		System.out.println("Calling run()");
 		//make a fresh list, set gate as closed, register listener
 		measurements = new TailLinkedList();
+		angles = new TailLinkedList();
 		gate = new CountDownLatch(1);
 		boolean worked = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);	
-		boolean worked2 = mSensorManager.registerListener(this, mLinearAcceleration, SensorManager.SENSOR_DELAY_FASTEST);
+		boolean worked2 = mSensorManager.registerListener(this, mOrientation, SensorManager.SENSOR_DELAY_FASTEST);
 		System.out.println("Return from registerlistener: " + worked + " and " + worked2);
 		List<Sensor> l = mSensorManager.getSensorList(Sensor.TYPE_ALL);
 		for(Sensor s : l)
@@ -144,7 +149,9 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		System.out.println("After while");
 		*/
 		//stop measuring
-		mSensorManager.unregisterListener(this);
+		mSensorManager.unregisterListener(this, mAccelerometer);
+		mSensorManager.unregisterListener(this, mOrientation);
+		
 		
 		double d = Distance(measurements.getxData(), 
 						measurements.getyData(),
@@ -224,11 +231,11 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		//This is the Euclid's method.
 		ArrayList<Float> dx_veloc = new ArrayList<Float>(); 
 		ArrayList<Float> dy_veloc = new ArrayList<Float>();
-		ArrayList<Float> dz_veloc = new ArrayList<Float>();
+		//ArrayList<Float> dz_veloc = new ArrayList<Float>();
 		
 		ArrayList<Float> x_veloc = new ArrayList<Float>(); x_veloc.add(0f);
 		ArrayList<Float> y_veloc = new ArrayList<Float>(); y_veloc.add(0f);
-		ArrayList<Float> z_veloc = new ArrayList<Float>(); z_veloc.add(0f);
+		//ArrayList<Float> z_veloc = new ArrayList<Float>(); z_veloc.add(0f);
 		
 		//compose velocity
 		int I = t.size();
@@ -242,8 +249,8 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 			dt = t.get(i+1) - t.get(i);
 			dx_veloc.add(  x_accel.get(i) * dt);
 			dy_veloc.add(  y_accel.get(i) * dt);
-			dz_veloc.add(  z_accel.get(i) * dt);
-			System.out.println("Step: " + i + "\ndt: " + dt + "\n\tv_x:"+ dx_veloc.get(i) + "\n\tv_y: " + dy_veloc.get(i) + "\n\tv_z: " + dz_veloc.get(i));
+			//dz_veloc.add(  z_accel.get(i) * dt);
+			System.out.println("Step: " + i + "\ndt: " + dt + "\n\tv_x:"+ dx_veloc.get(i) + "\n\tv_y: " + dy_veloc.get(i) + "\n\tv_z: " /*+ dz_veloc.get(i)*/);
 		}
 		float temp = 0f;
 		for(float d : dx_veloc)
@@ -259,20 +266,20 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 				y_veloc.add(temp);
 			}
 		
-		temp = 0;
+	/*	temp = 0;
 		for(float d : dz_veloc)
 			{
 				temp += d;
 				z_veloc.add(temp);
-			}
+			} */
 		
 		ArrayList<Float> dx_disp = new ArrayList<Float>();
 		ArrayList<Float> dy_disp = new ArrayList<Float>();
-		ArrayList<Float> dz_disp = new ArrayList<Float>();
+		//ArrayList<Float> dz_disp = new ArrayList<Float>();
 		
 		ArrayList<Float> x_disp = new ArrayList<Float>(); x_disp.add(0f);
 		ArrayList<Float> y_disp = new ArrayList<Float>(); y_disp.add(0f);
-		ArrayList<Float> z_disp = new ArrayList<Float>(); z_disp.add(0f);
+		//ArrayList<Float> z_disp = new ArrayList<Float>(); z_disp.add(0f);
 		
 		//compose displacement
 		I = t.size();
@@ -285,9 +292,9 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 			dt = t.get(i+1) - t.get(i);
 			dx_disp.add( x_veloc.get(i) * dt);
 			dy_disp.add( y_veloc.get(i) * dt);
-			dz_disp.add( z_veloc.get(i) * dt);
+			//dz_disp.add( z_veloc.get(i) * dt);
 			
-			System.out.println("Step: " + i + "\ndt: " + dt + "\n\td_x:"+ dx_disp.get(i) + "\n\td_y: " + dy_disp.get(i) + "\n\td_z: " + dz_disp.get(i));
+			System.out.println("Step: " + i + "\ndt: " + dt + "\n\td_x:"+ dx_disp.get(i) + "\n\td_y: " + dy_disp.get(i) + "\n\td_z: " /*+ dz_disp.get(i)*/);
 		}
 		
 		//compose total displacement
@@ -297,21 +304,22 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		{
 			//vector addition, constructing R
 			System.out.println("Composing R...\n");
-			float r[] = new float[3]; //[x, y, z]
+			float r[] = new float[2]; //[x, y]
+			//float r[] = new float[3]; //[x, y, z]
 			for( int i = 0; i < I-1; i++)
 			{
 				r[0] += dx_disp.get(i);
 				r[1] += dy_disp.get(i);
-				r[2] += dz_disp.get(i);
-				System.out.println("Step: " + i + "\n\tr_x: "+ r[0] + "\n\tr_y: " + r[1] + "\n\tr_z: " + r[2]);
+				//r[2] += dz_disp.get(i);
+				System.out.println("Step: " + i + "\n\tr_x: "+ r[0] + "\n\tr_y: " + r[1] /*+ "\n\tr_z: " + r[2]*/);
 			}
 		
 			//Distance formula, constructing D
 			//D = sqrt(X^2 + Y^2 + Z^2)
 			distance =  FloatMath.sqrt( 
 							(float)Math.pow(r[0], 2) + 
-							(float)Math.pow(r[1], 2) +
-							(float)Math.pow(r[2], 2)
+							(float)Math.pow(r[1], 2) //+
+							//(float)Math.pow(r[2], 2)
 							);
 			return distance;
 		}
@@ -324,8 +332,8 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 				//dD = sqrt( dx^2 + dy^2 + dz^2 )
 				distance += Math.sqrt(
 								Math.pow(dx_disp.get(i), 2) +
-								Math.pow(dy_disp.get(i), 2) +
-								Math.pow(dz_disp.get(i), 2)
+								Math.pow(dy_disp.get(i), 2) //+
+								//Math.pow(dz_disp.get(i), 2)
 								);
 			}		
 			return distance;
@@ -334,21 +342,40 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 }
 	
 	public void onSensorChanged(SensorEvent event) {
+		//if (event.accuracy == SensorManager.SENSOR_STATUS_UNRELIABLE)
+			//return;
 		
-		System.out.println("Sensor changed");
-		float x = event.values[0]; 
-		float y = event.values[1];
-		float z = event.values[2];
-		pi_string = "x = " + x + "\ny = " + y + "\nz = " + z;
-		System.out.println(pi_string);
-		handler.sendEmptyMessage(0);
-		measurements.add(x, y, z, System.currentTimeMillis()); //record values.
-		
+		switch(event.sensor.getType())
+		{
+		case Sensor.TYPE_ACCELEROMETER :
+			System.out.println("Accel Sensor changed");
+			float x = event.values[0] - calX; 
+			float y = event.values[1] - calY;
+			float z = event.values[2] - calZ;
+			long t = event.timestamp; 
+//			pi_string = "x = " + x + "\ny = " + y + "\nz = " + z;
+//			System.out.println(pi_string);
+//			handler.sendEmptyMessage(0);
+			measurements.add(x, y, z, t); //record values.
+			break;
+		case Sensor.TYPE_ORIENTATION :
+			System.out.println("Orientation Sensor Changed");
+			float aboutx = event.values[0];
+			float abouty = event.values[1];
+			float aboutz = event.values[2];
+			long time = event.timestamp;
+			pi_string = "x¡ = " + aboutx + "\ny¡ = " + abouty + "\nz¡ = " + aboutz;
+			System.out.println(pi_string);
+			handler.sendEmptyMessage(0);
+			angles.add(aboutx, abouty, aboutz, time);
+			break;
+			
+		}
 	}
 	
 	@Override
 	public void onAccuracyChanged(Sensor arg0, int arg1) {
-		System.out.println("onAccuracyChanged fired");
+		//System.out.println("onAccuracyChanged fired");
 		
 	}
 

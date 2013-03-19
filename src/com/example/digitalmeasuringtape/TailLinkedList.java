@@ -76,9 +76,10 @@ public class TailLinkedList {
 	Node trav = head;
 	if (trav == null) return null;
 	while(trav.next != null) {
+		//float t = trav.time;
 		double t = (double)trav.time;
-		t = t % 1000000;
-		t = t / 1000.0;
+		//t = t % 1000000;
+		t = t / 1000000000.0;
 		tData.add((float)t); 
 		trav = trav.next;
 	}
