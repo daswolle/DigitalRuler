@@ -13,6 +13,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -41,7 +42,8 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	private boolean activeThread = true;
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer;
-	private Sensor mOrientation;
+	private PhysicsManager physics;
+	public SharedPreferences settings;
 	public TailLinkedList measurements;
 	public TailLinkedList angles;
 	public CountDownLatch gate; //things call gate.await(), and get blocked.
@@ -61,11 +63,12 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		tv = (TextView) this.findViewById(R.id.text1);
 		tv.setText("--");
 		
+		settings = getSharedPreferences("prefs", 0);
+		physics = new PhysicsManager(this);
+		
 		//setting up sensor managers
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-		mOrientation = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
-		//TODO tv.setText(mAccelerometer.getMinDelay());
 	}
 	
 	//temporary to make sure this app isn't the one draining my battery...
@@ -126,21 +129,24 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	
 	//put the code to be run during execution here.
 	//this can be thought of as the main method of our thread.
-	public void run(){
+	public void run()
+	{
+		if(/*Not Calibrated*/true)
+			Calibrate();
 		
-		System.out.println("Calling run()");
+		MeasureAndCalculateDistance();
+	}
+	
+	public void Calibrate()
+	{
+		//Launch Count Down Window
+		
+		System.out.println("Calling MeasureAndCalculateDistance()");
 		//make a fresh list, set gate as closed, register listener
 		measurements = new TailLinkedList();
-		angles = new TailLinkedList();
 		gate = new CountDownLatch(1);
 		boolean worked = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);	
-		boolean worked2 = true;//mSensorManager.registerListener(this, mOrientation, SensorManager.SENSOR_DELAY_FASTEST);
-		System.out.println("Return from registerlistener: " + worked + " and " + worked2);
-		List<Sensor> l = mSensorManager.getSensorList(Sensor.TYPE_ALL);
-		for(Sensor s : l)
-			System.out.println(s.getName());
-		//Wait until the stop-measuring-signal. In the mean time,
-		//onSensorChanged events should be firing and measuring.
+		System.out.println("Return from registerlistener: " + worked );
 		
 		try {
 			gate.await();
@@ -148,21 +154,69 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		/*
-		System.out.println("Before while");
-		while(activeThread)
-		{}
-		System.out.println("After while");
-		*/
+		
+		mSensorManager.unregisterListener(this, mAccelerometer);
+		//mSensorManager.unregisterListener(this, mOrientation);
+		ArrayList<Float> xData = measurements.getxData();
+		ArrayList<Float> yData = measurements.getyData();
+		ArrayList<Float> zData = measurements.getzData();
+		
+		float xAvg = 0, yAvg = 0, zAvg = 0;
+		
+		for(int i = 0; i < xData.size(); i ++)
+		{
+			xAvg += xData.get(i);
+			yAvg += yData.get(i);
+			zAvg += zData.get(i);
+		}
+		
+		xAvg /= xData.size();
+		yAvg /= yData.size();
+		zAvg /= zData.size();
+		
+		SharedPreferences.Editor editor = settings.edit();
+		editor.putFloat("Gravity_x", xAvg);
+		editor.putFloat("Gravity_y", yAvg);
+		editor.putFloat("Gravity_z", zAvg);
+		editor.putBoolean("Calibrated", true);
+		
+		editor.commit();
+		
+	}
+	
+	public void MeasureAndCalculateDistance(){
+		
+		System.out.println("Calling MeasureAndCalculateDistance()");
+		//make a fresh list, set gate as closed, register listener
+		measurements = new TailLinkedList();
+		gate = new CountDownLatch(1);
+		boolean worked = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);	
+		System.out.println("Return from registerlistener: " + worked );
+		List<Sensor> l = mSensorManager.getSensorList(Sensor.TYPE_ALL);
+		for(Sensor s : l)
+			System.out.println(s.getName());
+		
+		try {
+			gate.await();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		//stop measuring
 		mSensorManager.unregisterListener(this, mAccelerometer);
 		//mSensorManager.unregisterListener(this, mOrientation);
+		ArrayList<Float> xData = measurements.getxData();
+		ArrayList<Float> yData = measurements.getyData();
+		ArrayList<Float> zData = measurements.getzData();
+		ArrayList<Float> tData = measurements.gettData();
 		
+		physics.RemoveGravity(mSensorManager, xData, yData, zData);
 		
-		double d = Physics.Distance(measurements.getxData(), 
-						measurements.getyData(),
-						measurements.getzData(),
-						measurements.gettData());
+		double d = physics.Distance(xData, 
+									yData,
+									zData,
+									tData);
 		
 		System.out.println(measurements.getxString());
 		
