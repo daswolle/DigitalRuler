@@ -65,7 +65,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		mOrientation = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
-		//TODO tv.setText(mAccelerometer.getMinDelay());
+		//TODO tv.setText(mAccelerometer.getMinDelay()); //can't b/c min API level 9 needed
 	}
 	
 	//temporary to make sure this app isn't the one draining my battery...
