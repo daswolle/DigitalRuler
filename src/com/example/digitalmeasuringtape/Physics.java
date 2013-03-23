@@ -23,11 +23,11 @@ public class Physics {
 			//This is the Euclid's method.
 			ArrayList<Float> dx_veloc = new ArrayList<Float>(); 
 			ArrayList<Float> dy_veloc = new ArrayList<Float>();
-			//ArrayList<Float> dz_veloc = new ArrayList<Float>();
+			ArrayList<Float> dz_veloc = new ArrayList<Float>();
 			
 			ArrayList<Float> x_veloc = new ArrayList<Float>(); x_veloc.add(0f);
 			ArrayList<Float> y_veloc = new ArrayList<Float>(); y_veloc.add(0f);
-			//ArrayList<Float> z_veloc = new ArrayList<Float>(); z_veloc.add(0f);
+			ArrayList<Float> z_veloc = new ArrayList<Float>(); z_veloc.add(0f);
 			
 			//compose velocity
 			int I = t.size();
@@ -41,7 +41,7 @@ public class Physics {
 				dt = t.get(i+1) - t.get(i);
 				dx_veloc.add(  x_accel.get(i) * dt);
 				dy_veloc.add(  y_accel.get(i) * dt);
-				//dz_veloc.add(  z_accel.get(i) * dt);
+				dz_veloc.add(  z_accel.get(i) * dt);
 				System.out.println("Step: " + i + "\ndt: " + dt + "\n\tv_x:"+ dx_veloc.get(i) + "\n\tv_y: " + dy_veloc.get(i) + "\n\tv_z: " /*+ dz_veloc.get(i)*/);
 			}
 			float temp = 0f;
@@ -58,20 +58,20 @@ public class Physics {
 					y_veloc.add(temp);
 				}
 			
-		/*	temp = 0;
+			temp = 0;
 			for(float d : dz_veloc)
 				{
 					temp += d;
 					z_veloc.add(temp);
-				} */
+				} 
 			
 			ArrayList<Float> dx_disp = new ArrayList<Float>();
 			ArrayList<Float> dy_disp = new ArrayList<Float>();
-			//ArrayList<Float> dz_disp = new ArrayList<Float>();
+			ArrayList<Float> dz_disp = new ArrayList<Float>();
 			
 			ArrayList<Float> x_disp = new ArrayList<Float>(); x_disp.add(0f);
 			ArrayList<Float> y_disp = new ArrayList<Float>(); y_disp.add(0f);
-			//ArrayList<Float> z_disp = new ArrayList<Float>(); z_disp.add(0f);
+			ArrayList<Float> z_disp = new ArrayList<Float>(); z_disp.add(0f);
 			
 			//compose displacement
 			I = t.size();
@@ -84,7 +84,7 @@ public class Physics {
 				dt = t.get(i+1) - t.get(i);
 				dx_disp.add( x_veloc.get(i) * dt);
 				dy_disp.add( y_veloc.get(i) * dt);
-				//dz_disp.add( z_veloc.get(i) * dt);
+				dz_disp.add( z_veloc.get(i) * dt);
 				
 				System.out.println("Step: " + i + "\ndt: " + dt + "\n\td_x:"+ dx_disp.get(i) + "\n\td_y: " + dy_disp.get(i) + "\n\td_z: " /*+ dz_disp.get(i)*/);
 			}
@@ -96,13 +96,12 @@ public class Physics {
 			{
 				//vector addition, constructing R
 				System.out.println("Composing R...\n");
-				float r[] = new float[2]; //[x, y]
-				//float r[] = new float[3]; //[x, y, z]
+				float r[] = new float[3]; //[x, y, z]
 				for( int i = 0; i < I-1; i++)
 				{
 					r[0] += dx_disp.get(i);
 					r[1] += dy_disp.get(i);
-					//r[2] += dz_disp.get(i);
+					r[2] += dz_disp.get(i);
 					System.out.println("Step: " + i + "\n\tr_x: "+ r[0] + "\n\tr_y: " + r[1] /*+ "\n\tr_z: " + r[2]*/);
 				}
 			
@@ -124,8 +123,8 @@ public class Physics {
 					//dD = sqrt( dx^2 + dy^2 + dz^2 )
 					distance += Math.sqrt(
 									Math.pow(dx_disp.get(i), 2) +
-									Math.pow(dy_disp.get(i), 2) //+
-									//Math.pow(dz_disp.get(i), 2)
+									Math.pow(dy_disp.get(i), 2) +
+									Math.pow(dz_disp.get(i), 2)
 									);
 				}		
 				return distance;

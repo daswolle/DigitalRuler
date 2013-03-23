@@ -121,7 +121,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		angles = new TailLinkedList();
 		gate = new CountDownLatch(1);
 		boolean worked = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);	
-		boolean worked2 = mSensorManager.registerListener(this, mOrientation, SensorManager.SENSOR_DELAY_FASTEST);
+		boolean worked2 = true;//mSensorManager.registerListener(this, mOrientation, SensorManager.SENSOR_DELAY_FASTEST);
 		System.out.println("Return from registerlistener: " + worked + " and " + worked2);
 		List<Sensor> l = mSensorManager.getSensorList(Sensor.TYPE_ALL);
 		for(Sensor s : l)
@@ -143,7 +143,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		*/
 		//stop measuring
 		mSensorManager.unregisterListener(this, mAccelerometer);
-		mSensorManager.unregisterListener(this, mOrientation);
+		//mSensorManager.unregisterListener(this, mOrientation);
 		
 		
 		double d = Physics.Distance(measurements.getxData(), 
@@ -219,9 +219,9 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 			float y = event.values[1];
 			float z = event.values[2];
 			long t = event.timestamp; 
-//			pi_string = "x = " + x + "\ny = " + y + "\nz = " + z;
-//			System.out.println(pi_string);
-//			handler.sendEmptyMessage(0);
+			pi_string = "x = " + x + "\ny = " + y + "\nz = " + z;
+			System.out.println(pi_string);
+			handler.sendEmptyMessage(0);
 			measurements.add(x, y, z, t); //record values.
 			break;
 		case Sensor.TYPE_ORIENTATION :
