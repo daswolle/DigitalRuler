@@ -17,13 +17,17 @@
     <PreferenceCategory
         android:title="Calibration">
         <Preference
+            android:title="Calibrate"
+            android:summary="Set up accelerometer to be more accurate" 
+            android:key="calibrate_key">
+              <intent
+                  android:action="android.intent.action.MAIN"
+                  android:targetPackage="com.example.digitalmeasuringtape"
+                  android:targetClass="com.example.digitalmeasuringtape.Calibrate" />
+              </Preference>
+        <Preference
             android:title="getMinDelay()"
-            android:summary="returns minimum time data for a sensor to return data" >
-            <intent
-                android:action="android.intent.action.MAIN"
-                android:targetPackage="com.example.digitalmeasuringtape"
-                android:targetClass="com.example.digitalmeasuringtape.getMinDelay"
-                />
-        </Preference>
+            android:summary="returns minimum time data for a sensor to return data" 
+            android:onClick="calibrate_sensor"/>
     </PreferenceCategory>
 </PreferenceScreen>

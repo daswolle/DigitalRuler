@@ -6,11 +6,12 @@
         android:showAsAction="never"
         android:title="@string/settings"/>
     
-    <item android:id="@+id/help"
+<!--    <item android:id="@+id/help"
         android:orderInCategory="101"
         android:showAsAction="never"
         android:title="@string/help" />
-    
+ -->  
+  
 <!--    
 	
 	<item android:id="@+id/about_menuitem"

@@ -2,12 +2,21 @@ package com.example.digitalmeasuringtape;
 
 import java.util.ArrayList;
 
+import android.content.SharedPreferences;
+import android.hardware.SensorManager;
 import android.util.FloatMath;
 
-public class Physics {
+public class PhysicsManager {
 
+		SharedPreferences settings;
+	
+		public PhysicsManager(MainActivity main)
+		{
+			settings = main.settings;
+		}
+		
 	@SuppressWarnings("unused")
-		public static float Distance(	ArrayList<Float> x_accel, 
+		public float Distance(	ArrayList<Float> x_accel, 
 										ArrayList<Float> y_accel, 
 										ArrayList<Float> z_accel,
 										ArrayList<Float> t)
@@ -132,10 +141,37 @@ public class Physics {
 		return 0; //won't get here.
 	}
 
-		/*----Parameters-----
-			Vector: an array representing a 3-component vector. [x.y.z]
-			*/
-		public static void Rotate(float[] vector, double psi, double theta, double phi )
+		public void RemoveGravity( 	SensorManager mSensorManager, 
+											ArrayList<Float> xData,
+											ArrayList<Float> yData,
+											ArrayList<Float> zData)
+		{
+			/*
+			 * Removes gravity via high-pass filter 
+			 * */
+			
+				
+			int count = xData.size();
+			float Gx = settings.getFloat("Gravity_x", 0);
+			float Gy = 0;
+			float Gz = 0;
+			final float alpha = 0.8f;
+			
+			for(int i=0; i < count; i ++)
+			{
+				Gx = alpha * Gx + (1 - alpha) * xData.get(i);
+				Gy = alpha * Gy + (1 - alpha) * yData.get(i);
+				Gz = alpha * Gz + (1 - alpha) * zData.get(i);
+			
+				xData.set(i, xData.get(i)-Gx);
+				yData.set(i, yData.get(i)-Gy);
+				zData.set(i, zData.get(i)-Gz);
+			}
+			
+			
+		}
+		
+		public void Rotate(float[] vector, double psi, double theta, double phi )
 		{
 			double[][] arr_Rx = {	{1.0, 				0.0, 				 0.0}, 
 									{0.0, 	Math.cos(theta), 	-Math.sin(theta)},
