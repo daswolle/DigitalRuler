@@ -21,10 +21,11 @@ import android.hardware.SensorManager;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.util.FloatMath;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -32,6 +33,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.TextView;
 
 public class MainActivity extends Activity implements Runnable, SensorEventListener{
@@ -54,7 +56,9 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	{
 		if(mSensorManager != null)
 			mSensorManager.unregisterListener(this);
+		onDestroy();
 	}
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -70,6 +74,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		//TODO tv.setText(mAccelerometer.getMinDelay()); //can't b/c min API level 9 needed
+		
 	}
 	
 	//temporary to make sure this app isn't the one draining my battery...
@@ -81,13 +86,24 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	
 	//connected to button's onClick
 	public void start_distance_process(View view){
-		//false below is for cancleable; may need to change
-		//pd = ProgressDialog.show(this, "Working..", "Sucking on balls...", true, false);
 		
+		//check if Calibrated is true
+//		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+//		boolean CALIBRATED = sharedPref.getBoolean("CALIBRATED", false);
+//		System.out.println(CALIBRATED);
+//		if (!CALIBRATED){
+//			//if false, calibrate
+//			Thread calibration_thread = new Thread(this);
+//			calibration_thread.start();
+//			//Calibrate_popup();
+//			Intent i = new Intent(this,Calibrate.class);
+//			startActivity(i);
+//		}
+		//start alert dialog
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setPositiveButton("FINIZH", new DialogInterface.OnClickListener(){
 			public void onClick(DialogInterface dialog, int id){
-				//TODO when user clicks
+				//kill thread on click
 				activeThread = false;
 				if(gate!=null)
 	            	gate.countDown(); 	
@@ -95,13 +111,15 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		});
 		builder.setMessage("WERKING").setTitle("TWERKING");
 		AlertDialog dialog = builder.create();
-		WindowManager.LayoutParams wmlp = dialog.getWindow().getAttributes();
 		
+		//temporary: move dialog down
+		WindowManager.LayoutParams wmlp = dialog.getWindow().getAttributes();
 		wmlp.gravity = Gravity.TOP | Gravity.LEFT;
 		wmlp.y = 400;
 		
 		dialog.show();
 		
+		//start thread
 		System.out.println("Started distance process.");
 		Thread thread = new Thread(this);
 		thread.start();
@@ -131,26 +149,61 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	//put the code to be run during execution here.
 	//this can be thought of as the main method of our thread.
 	public void run()
-	{
-		if(/*Not Calibrated*/true)
-			Calibrate();
-		
+	{		
+		//check if Calibrated is true
+		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+		boolean CALIBRATED = sharedPref.getBoolean("CALIBRATED", false);
+		if (!CALIBRATED){
+		Calibrate();
+		}
+		else{
 		MeasureAndCalculateDistance();
+		}
+	}
+	
+	AlertDialog calibrate_dialog;
+	public void Calibrate_popup(){
+		
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setMessage("00:05").setTitle("CALIBRATING");
+			calibrate_dialog = builder.create();
+			calibrate_dialog.show();
+			
+			//TODO call Calibrate()
+			
+			new CountDownTimer(6000,1000){
+				@Override
+				public void onTick(long millisUntilFinished){
+					calibrate_dialog.setMessage("00:" + (millisUntilFinished/1000));
+				}
+				
+				@Override
+				public void onFinish(){
+					calibrate_dialog.dismiss();
+				}
+			}.start();
+		return;
 	}
 	
 	public void Calibrate()
-	{
-		//Launch Count Down Window
+	{	
+		
+		//call calibrate activity
+		Intent intent = new Intent(this,Calibrate.class);
+		startActivity(intent);
+		
 		
 		System.out.println("Calling MeasureAndCalculateDistance()");
 		//make a fresh list, set gate as closed, register listener
 		measurements = new TailLinkedList();
-		gate = new CountDownLatch(1);
+//		gate = new CountDownLatch(1);
 		boolean worked = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);	
 		System.out.println("Return from registerlistener: " + worked );
 		
 		try {
 			gate.await();
+//			Thread.sleep(5000);
+//			System.out.println("after sleep");
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -179,7 +232,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		editor.putFloat("Gravity_x", xAvg);
 		editor.putFloat("Gravity_y", yAvg);
 		editor.putFloat("Gravity_z", zAvg);
-		editor.putBoolean("Calibrated", true);
+		editor.putBoolean("CALIBRATED", true);
 		
 		editor.commit();
 		

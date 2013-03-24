@@ -27,8 +27,8 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.example.digitalmeasuringtape.About"
-            android:label="About" >
+            android:name="com.example.digitalmeasuringtape.Calibrate"
+            android:label="Calibrate" >
        </activity>
        <activity
            android:name="com.example.digitalmeasuringtape.Settings"
