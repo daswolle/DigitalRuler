@@ -193,7 +193,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		startActivity(intent);
 		
 		
-		System.out.println("Calling MeasureAndCalculateDistance()");
+		System.out.println("Calling Calibrate()");
 		//make a fresh list, set gate as closed, register listener
 		measurements = new TailLinkedList();
 //		gate = new CountDownLatch(1);
@@ -201,9 +201,8 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		System.out.println("Return from registerlistener: " + worked );
 		
 		try {
-			gate.await();
-//			Thread.sleep(5000);
-//			System.out.println("after sleep");
+			Thread.sleep(1000);
+			//gate.await();
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -229,6 +228,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		zAvg /= zData.size();
 		
 		SharedPreferences.Editor editor = settings.edit();
+		System.out.println("Gx= " + xAvg + "\tGy= " + yAvg + "\tGz= " + zAvg);
 		editor.putFloat("Gravity_x", xAvg);
 		editor.putFloat("Gravity_y", yAvg);
 		editor.putFloat("Gravity_z", zAvg);
