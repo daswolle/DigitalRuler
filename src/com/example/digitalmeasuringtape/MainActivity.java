@@ -151,10 +151,10 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	public void run()
 	{		
 		//check if Calibrated is true
-		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-		boolean CALIBRATED = sharedPref.getBoolean("CALIBRATED", false);
+		boolean CALIBRATED = settings.getBoolean("CALIBRATED", false);
+		
 		if (!CALIBRATED){
-		Calibrate();
+			Calibrate();
 		}
 		else{
 		MeasureAndCalculateDistance();
@@ -272,8 +272,6 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 									zData,
 									tData);
 		
-		System.out.println(measurements.getxString());
-		
 		/*******try writing xData to file***************/
 		boolean mExternalStorageAvailable = false;
 		boolean mExternalStorageWriteable = false;
@@ -301,9 +299,9 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 			try {
 //				path.mkdirs();
 				System.out.println("Saving data to file");
-				measurements.getxString();
+				//measurements.getxString();
 				FileOutputStream outputStream = new FileOutputStream(file);
-				outputStream.write(measurements.getxString().getBytes());
+				//outputStream.write(measurements.getxString().getBytes());
 				outputStream.close();
 				
 				MediaScannerConnection.scanFile(this, 
@@ -329,6 +327,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		//d.toString(), then truncate to two decimal places
 		String truncate;
 		if(d == -1.0) truncate = "-1.0"; 
+		if(d == 0) truncate = "0.0";
 		else
 		{
 			String d_str = Double.valueOf(d).toString(); 
@@ -389,13 +388,11 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		switch(event.sensor.getType())
 		{
 		case Sensor.TYPE_ACCELEROMETER :
-			System.out.println("Accel Sensor changed");
 			float x = event.values[0]; 
 			float y = event.values[1];
 			float z = event.values[2];
 			long t = event.timestamp; 
 			pi_string = "x = " + x + "\ny = " + y + "\nz = " + z;
-			System.out.println(pi_string);
 			handler.sendEmptyMessage(0);
 			measurements.add(x, y, z, t); //record values.
 			break;

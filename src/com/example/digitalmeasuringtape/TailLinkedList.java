@@ -34,17 +34,17 @@ public class TailLinkedList {
    }
   }
   	  
-  public String getxString(){
-	  String xData = "";
-	  System.out.println("Entering getxString");
-	  Node trav = head;
-	  if (trav == null) return null;
-	  while(trav.next != null){
-		  xData = xData + "," + trav.x;
-		  trav = trav.next;
-	  }
-	  return xData;
-  }
+//  public String getxString(){
+//	  String xData = "";
+//	  System.out.println("Entering getxString");
+//	  Node trav = head;
+//	  if (trav == null) return null;
+//	  while(trav.next != null){
+//		  xData = xData + "," + trav.x;
+//		  trav = trav.next;
+//	  }
+//	  return xData;
+//  }
   
   public ArrayList<Float> getxData() {
    System.out.println("Entering getxData");
@@ -87,9 +87,10 @@ public class TailLinkedList {
 	ArrayList<Float> tData = new ArrayList<Float>();
 	Node trav = head;
 	if (trav == null) return null;
+	float t0 = trav.time;
 	while(trav.next != null) {
 		//float t = trav.time;
-		double t = (double)trav.time;
+		double t = (double)trav.time - t0;
 		//t = t % 1000000;
 		t = t / 1000000000.0;
 		tData.add((float)t); 
