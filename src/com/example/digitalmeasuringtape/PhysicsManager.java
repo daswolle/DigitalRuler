@@ -481,7 +481,8 @@ public class PhysicsManager {
 											ArrayList<Float> zData,
 											ArrayList<Float> oxData,
 											ArrayList<Float> oyData,
-											ArrayList<Float> ozData
+											ArrayList<Float> ozData,
+											ArrayList<Float> tData
 											)
 		{
 			/*
@@ -489,7 +490,7 @@ public class PhysicsManager {
 			 * */
 			
 				
-			int count = xData.size();
+			int count = xData.size(); //we assume all array lists are the same size because of their construction
 			
 			float Gx = 0f;//settings.getFloat("Gravity_x", 0);
 			float Gy = 0f;//settings.getFloat("Gravity_y", 0);
@@ -509,7 +510,17 @@ public class PhysicsManager {
 				//zData.set(i, zData.get(i)-Gz);
 				
 				float x = xData.get(i);
-				float
+				float y = yData.get(i);
+				float z = zData.get(i);
+				float ox = oxData.get(i);
+				float oy = oyData.get(i);
+				float oz = ozData.get(i);
+				float t = tData.get(i);
+				
+				
+				
+				
+				
 			}
 			
 			
