@@ -130,7 +130,9 @@ public class Calibrate extends Activity implements SensorEventListener, Runnable
 		pi_string = "x = " + x + "\ny = " + y + "\nz = " + z;
 		System.out.println(pi_string);
 //		handler.sendEmptyMessage(0);
-		measurements.add(x, y, z, t); //record values.
+		
+		//TODO: Calibrate must now include orientation business to function correctly 
+		measurements.add(x, y, z, 0f,0f,0f, t); //record values.
 		break;
 	}
 	}
