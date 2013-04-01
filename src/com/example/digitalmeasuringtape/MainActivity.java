@@ -408,7 +408,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 			long t = event.timestamp; 
 			pi_string = "x = " + x + "\ny = " + y + "\nz = " + z;
 			handler.sendEmptyMessage(0);
-			measurements.add(x, y, z, lastOrientation[0], lastOrientation[1], lastOrientation[2], t); //record values.
+			measurements.add(x, y, z, lastOrientation[1], lastOrientation[2], lastOrientation[0], t); //record values.
 			break;
 		case Sensor.TYPE_ORIENTATION :
 			System.out.println("Orientation Sensor Changed");

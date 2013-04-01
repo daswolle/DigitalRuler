@@ -8,10 +8,12 @@ import android.util.FloatMath;
 
 public class PhysicsManager {
 
+		MainActivity main;
 		SharedPreferences settings;
 	
 		public PhysicsManager(MainActivity main)
 		{
+			this.main = main;
 			settings = main.settings;
 		}
 		
@@ -479,16 +481,17 @@ public class PhysicsManager {
 		public void RemoveGravity(  		ArrayList<Float> xData,
 											ArrayList<Float> yData,
 											ArrayList<Float> zData,
+											
 											ArrayList<Float> oxData,
 											ArrayList<Float> oyData,
-											ArrayList<Float> ozData,
-											ArrayList<Float> tData
+											ArrayList<Float> ozData
 											)
 		{
 			/*
 			 * Removes gravity via high-pass filter 
 			 * */
 			
+			System.out.println("Entering RemoveGravity");
 				
 			int count = xData.size(); //we assume all array lists are the same size because of their construction
 			
@@ -497,7 +500,11 @@ public class PhysicsManager {
 			float Gz = 9.8f;//settings.getFloat("Gravity_z", 0);
 			//final float alpha = 0.9f;
 			
-			//System.out.printf("Subtracting out a calibrated gravity vector of [%f, %f, %f]",Gx,Gy,Gz);
+			
+			System.out.println("OX angles: " + oxData);
+			System.out.println("OY angles: " + oyData);
+			System.out.println("OZ angles: " + ozData);
+			
 			
 			for(int i=0; i < count; i ++)
 			{
@@ -512,42 +519,66 @@ public class PhysicsManager {
 				float x = xData.get(i);
 				float y = yData.get(i);
 				float z = zData.get(i);
+				
 				float ox = oxData.get(i);
 				float oy = oyData.get(i);
 				float oz = ozData.get(i);
-				float t = tData.get(i);
 				
+				float[] rotatedGravity = Rotate(Gx, Gy, Gz, ox, oy, oz);
+				x -= rotatedGravity[0];
+				y -= rotatedGravity[1];
+				z -= rotatedGravity[2];
 				
+				//replacing original measurement with (measurement - gravity)
+				xData.set(i, x);
+				yData.set(i, y);
+				zData.set(i, z);
 				
-				
-				
+				System.out.printf("Step %d: Removing gravity of [ %f, %f, %f]=%f\n", i,
+																				rotatedGravity[0],
+																				rotatedGravity[1],
+																				rotatedGravity[2],
+																				Math.sqrt(rotatedGravity[0] * rotatedGravity[0] + rotatedGravity[1] * rotatedGravity[1] + rotatedGravity[2] * rotatedGravity[2]));
 			}
 			
 			
 		}
 		
-		public void Rotate(float[] vector, double psi, double theta, double phi )
+		public float[] Rotate(float x, float y, float z, float theta, float phi, float psi )
 		{
-			//these very well may have the wrong angles in them. 
-			//i.e., maybe the x matrix should have phi instead of theta
-			double[][] arr_Rx = {	{1.0, 				0.0, 				 0.0}, 
-									{0.0, 	Math.cos(theta), 	-Math.sin(theta)},
-									{0.0,	Math.sin(theta), 	-Math.cos(theta)}
-					};
-			double[][] arr_Ry = {	{Math.cos(phi), 	0.0,		Math.sin(phi)}, 
-									{0.0, 				1.0,		  		  0.0},
-									{-Math.sin(phi),	0.0,		Math.cos(phi)}
-					};
-			double[][] arr_Rz = {	{Math.cos(psi), -Math.sin(psi), 		  0.0}, 
-									{Math.sin(psi),  Math.cos(psi), 		  0.0},
-									{0.0,				0.0, 				  1.0}
-					};
-
-			Matrix Rx = new Matrix(arr_Rx);
-			Matrix Ry = new Matrix(arr_Ry);
-			Matrix Rz = new Matrix(arr_Rz);
-
+			double cosTheta = Math.cos(theta);
+			double sinTheta = Math.sin(theta);
+			double cosPsi = Math.cos(psi);
+			double sinPsi = Math.sin(psi);
+			double cosPhi = Math.cos(phi);
+			double sinPhi = Math.sin(phi);
+			
+			double[][] arr_XYZ = 
+				{
+					{x},
+					{y},
+					{z}
+				};
+			
+			double[][] arr_R =	
+				{	
+					{cosTheta * cosPsi,		sinPhi*sinTheta * cosPsi - cosPhi * sinPsi,		cosPhi * sinTheta * cosPsi + sinPhi *sinPsi},
+					{cosTheta * sinPsi,		sinPhi * sinTheta * sinPsi + cosPhi *cosPsi,	cosPhi*sinTheta*sinPsi - sinPhi*cosPsi},
+					{-sinTheta,				sinPhi * cosTheta,								cosPhi * cosTheta}	
+				};
+					
+			Matrix XYZ = new Matrix(arr_XYZ);
+			Matrix R = new Matrix(arr_R);
+			//R = R.transpose();
+			
+			Matrix Rotated = R.times(XYZ);
+			
 			//not done
+			float[] rotated = new float[3];
+			rotated[0] = (float)Rotated.get(0,0);
+			rotated[1] = (float)Rotated.get(1, 0);
+			rotated[2] = (float)Rotated.get(2, 0);
+			return rotated;
 		}
 
 }
