@@ -17,8 +17,8 @@ public class TailLinkedList {
    tail = firstNode;
   }
 
-  public void add(float x, float y, float z, long time) {
-   Node newNode = new Node(x, y, z, time);
+  public void add(float x, float y, float z, float ox, float oy, float oz, long time) {
+   Node newNode = new Node(x, y, z, ox, oy, oz, time);
    if(head==null && tail == null)
    {
 	   //then this is the first node inserted ever
@@ -98,18 +98,63 @@ public class TailLinkedList {
 	}
 	return tData;
   }
+  
+  public ArrayList<Float> getoxData() {
+	   System.out.println("Entering getoxData");
+	   ArrayList<Float> oxData = new ArrayList<Float>();
+	   Node trav = head;
+	   if (trav == null) return null;
+	   while(trav.next != null) {
+	    oxData.add(trav.ox);
+	    trav = trav.next;
+	   }
+	   return oxData;
+	  }
+  
+  public ArrayList<Float> getoyData() {
+	   System.out.println("Entering getoyData");
+	   ArrayList<Float> oyData = new ArrayList<Float>();
+	   Node trav = head;
+	   if (trav == null) return null;
+	   while(trav.next != null) {
+	    oyData.add(trav.oy);
+	    trav = trav.next;
+	   }
+	   return oyData;
+	  }
+  
+  public ArrayList<Float> getozData() {
+	   System.out.println("Entering getozData");
+	   ArrayList<Float> ozData = new ArrayList<Float>();
+	   Node trav = head;
+	   if (trav == null) return null;
+	   while(trav.next != null) {
+	    ozData.add(trav.oz);
+	    trav = trav.next;
+	   }
+	   return ozData;
+	  }
 
   private class Node {
   	public float x;
   	public float y;
   	public float z;
+  	public float ox;
+  	public float oy;
+  	public float oz;
+  	
   	public long time;
   	public Node next;
 
- 	 public Node(float newX, float newY, float newZ, long newTime) {
+ 	 public Node(	float newX, float newY, float newZ,
+ 			 		float newOX, float newOY, float newOZ,
+ 			 		long newTime) {
    		x = newX;
    		y = newY;
    		z = newZ;
+   		ox = newOX;
+   		oy = newOY;
+   		oz = newOZ;
 	   time = newTime;
 	   next = null;
 	  }

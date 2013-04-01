@@ -44,6 +44,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	private boolean activeThread = true;
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer;
+	private Sensor mOrientation;
 	private PhysicsManager physics;
 	public SharedPreferences settings;
 	public TailLinkedList measurements;
@@ -74,6 +75,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		//setting up sensor managers
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+		mOrientation = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
 		//TODO tv.setText(mAccelerometer.getMinDelay()); //can't b/c min API level 9 needed
 		
 	}
@@ -199,6 +201,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		measurements = new TailLinkedList();
 //		gate = new CountDownLatch(1);
 		boolean worked = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);	
+		
 		System.out.println("Return from registerlistener: " + worked );
 		
 		try {
@@ -247,7 +250,10 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		lastOrientation = new float[3];
 		gate = new CountDownLatch(1);
 		boolean worked = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);	
-		System.out.println("Return from registerlistener: " + worked );
+		boolean worked2 = mSensorManager.registerListener(this, mOrientation, SensorManager.SENSOR_DELAY_FASTEST);	
+		
+		
+		System.out.println("Return from registerlistener: " + worked  + " and " + worked2);
 		List<Sensor> l = mSensorManager.getSensorList(Sensor.TYPE_ALL);
 		for(Sensor s : l)
 			System.out.println(s.getName());
@@ -261,7 +267,8 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		
 		//stop measuring
 		mSensorManager.unregisterListener(this, mAccelerometer);
-		//mSensorManager.unregisterListener(this, mOrientation);
+		mSensorManager.unregisterListener(this, mOrientation);
+		
 		ArrayList<Float> xData = measurements.getxData();
 		ArrayList<Float> yData = measurements.getyData();
 		ArrayList<Float> zData = measurements.getzData();
