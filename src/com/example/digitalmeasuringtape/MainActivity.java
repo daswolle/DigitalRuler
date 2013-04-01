@@ -47,6 +47,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	private PhysicsManager physics;
 	public SharedPreferences settings;
 	public TailLinkedList measurements;
+	public float[] lastOrientation;
 	public TailLinkedList angles;
 	public CountDownLatch gate; //things call gate.await(), and get blocked.
 								//things become unblocked when gate.countDown()
@@ -243,6 +244,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		System.out.println("Calling MeasureAndCalculateDistance()");
 		//make a fresh list, set gate as closed, register listener
 		measurements = new TailLinkedList();
+		lastOrientation = new float[3];
 		gate = new CountDownLatch(1);
 		boolean worked = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);	
 		System.out.println("Return from registerlistener: " + worked );
@@ -388,24 +390,27 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		switch(event.sensor.getType())
 		{
 		case Sensor.TYPE_ACCELEROMETER :
+			if(lastOrientation[0] == 0f && lastOrientation[1] == 0f && lastOrientation[2] == 0f) {
+				break;
+			}
 			float x = event.values[0]; 
 			float y = event.values[1];
 			float z = event.values[2];
 			long t = event.timestamp; 
 			pi_string = "x = " + x + "\ny = " + y + "\nz = " + z;
 			handler.sendEmptyMessage(0);
-			measurements.add(x, y, z, t); //record values.
+			measurements.add(x, y, z, lastOrientation[0], lastOrientation[1], lastOrientation[2], t); //record values.
 			break;
 		case Sensor.TYPE_ORIENTATION :
 			System.out.println("Orientation Sensor Changed");
-			float aboutz = event.values[0];
-			float aboutx = event.values[1];
-			float abouty = event.values[2];
+			lastOrientation[0] = event.values[0];
+			lastOrientation[1] = event.values[1];
+			lastOrientation[2] = event.values[2];
 			long time = event.timestamp;
-			pi_string = "Azimuth¡ = " + aboutz + "\nPitch¡ = " + aboutx + "\nYaw¡ = " + abouty;
+			pi_string = "Azimuth¡ = " + lastOrientation[0] + "\nPitch¡ = " + lastOrientation[1] + "\nYaw¡ = " + lastOrientation[2];
 			System.out.println(pi_string);
 			handler.sendEmptyMessage(0);
-			angles.add(aboutz, aboutx, abouty, time);
+			angles.add(lastOrientation[0], lastOrientation[1], lastOrientation[2], time);
 			break;
 			
 		}
