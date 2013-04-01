@@ -417,7 +417,6 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 			pi_string = "Azimuth¡ = " + lastOrientation[0] + "\nPitch¡ = " + lastOrientation[1] + "\nYaw¡ = " + lastOrientation[2];
 			System.out.println(pi_string);
 			handler.sendEmptyMessage(0);
-			angles.add(lastOrientation[0], lastOrientation[1], lastOrientation[2], time);
 			break;
 			
 		}
