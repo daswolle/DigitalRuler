@@ -476,10 +476,13 @@ public class PhysicsManager {
 		return 0; //won't get here.
 		}
 
-		public void RemoveGravity( 	SensorManager mSensorManager, 
-											ArrayList<Float> xData,
+		public void RemoveGravity(  		ArrayList<Float> xData,
 											ArrayList<Float> yData,
-											ArrayList<Float> zData)
+											ArrayList<Float> zData,
+											ArrayList<Float> oxData,
+											ArrayList<Float> oyData,
+											ArrayList<Float> ozData
+											)
 		{
 			/*
 			 * Removes gravity via high-pass filter 
@@ -487,12 +490,13 @@ public class PhysicsManager {
 			
 				
 			int count = xData.size();
-			float Gx = settings.getFloat("Gravity_x", 0);
-			float Gy = settings.getFloat("Gravity_y", 0);
-			float Gz = settings.getFloat("Gravity_z", 0);
-			final float alpha = 0.9f;
 			
-			System.out.printf("Subtracting out a calibrated gravity vector of [%f, %f, %f]",Gx,Gy,Gz);
+			float Gx = 0f;//settings.getFloat("Gravity_x", 0);
+			float Gy = 0f;//settings.getFloat("Gravity_y", 0);
+			float Gz = 9.8f;//settings.getFloat("Gravity_z", 0);
+			//final float alpha = 0.9f;
+			
+			//System.out.printf("Subtracting out a calibrated gravity vector of [%f, %f, %f]",Gx,Gy,Gz);
 			
 			for(int i=0; i < count; i ++)
 			{
@@ -500,9 +504,12 @@ public class PhysicsManager {
 				//Gy = alpha * Gy + (1 - alpha) * yData.get(i);
 				//Gz = alpha * Gz + (1 - alpha) * zData.get(i);
 			
-				xData.set(i, xData.get(i)-Gx);
-				yData.set(i, yData.get(i)-Gy);
-				zData.set(i, zData.get(i)-Gz);
+				//xData.set(i, xData.get(i)-Gx);
+				//yData.set(i, yData.get(i)-Gy);
+				//zData.set(i, zData.get(i)-Gz);
+				
+				float x = xData.get(i);
+				float
 			}
 			
 			

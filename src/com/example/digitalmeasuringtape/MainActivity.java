@@ -49,7 +49,6 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	public SharedPreferences settings;
 	public TailLinkedList measurements;
 	public float[] lastOrientation;
-	public TailLinkedList angles;
 	public CountDownLatch gate; //things call gate.await(), and get blocked.
 								//things become unblocked when gate.countDown()
 								//is called enough times, which will be 1
@@ -247,7 +246,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		System.out.println("Calling MeasureAndCalculateDistance()");
 		//make a fresh list, set gate as closed, register listener
 		measurements = new TailLinkedList();
-		lastOrientation = new float[3];
+		lastOrientation = new float[3]; lastOrientation[0] = -1f; lastOrientation[1] = -1f; lastOrientation[2] = -1f;
 		gate = new CountDownLatch(1);
 		boolean worked = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);	
 		boolean worked2 = mSensorManager.registerListener(this, mOrientation, SensorManager.SENSOR_DELAY_FASTEST);	
@@ -272,9 +271,12 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		ArrayList<Float> xData = measurements.getxData();
 		ArrayList<Float> yData = measurements.getyData();
 		ArrayList<Float> zData = measurements.getzData();
+		ArrayList<Float> oxData = measurements.getoxData();
+		ArrayList<Float> oyData = measurements.getoyData();
+		ArrayList<Float> ozData = measurements.getozData();
 		ArrayList<Float> tData = measurements.gettData();
 		
-		physics.RemoveGravity(mSensorManager, xData, yData, zData);
+		physics.RemoveGravity(xData, yData, zData, oxData, oyData, ozData);
 		
 		double d = physics.Distance(xData, 
 									yData,
@@ -397,7 +399,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		switch(event.sensor.getType())
 		{
 		case Sensor.TYPE_ACCELEROMETER :
-			if(lastOrientation[0] == 0f && lastOrientation[1] == 0f && lastOrientation[2] == 0f) {
+			if(lastOrientation[0] == -1f && lastOrientation[1] == -1f && lastOrientation[2] == -1f) {
 				break;
 			}
 			float x = event.values[0]; 
@@ -414,9 +416,9 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 			lastOrientation[1] = event.values[1];
 			lastOrientation[2] = event.values[2];
 			long time = event.timestamp;
-			pi_string = "Azimuth¡ = " + lastOrientation[0] + "\nPitch¡ = " + lastOrientation[1] + "\nYaw¡ = " + lastOrientation[2];
-			System.out.println(pi_string);
-			handler.sendEmptyMessage(0);
+			//pi_string = "Azimuth¡ = " + lastOrientation[0] + "\nPitch¡ = " + lastOrientation[1] + "\nYaw¡ = " + lastOrientation[2];
+			//System.out.println(pi_string);
+			//handler.sendEmptyMessage(0);
 			break;
 			
 		}
