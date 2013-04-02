@@ -99,6 +99,20 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 //			Intent i = new Intent(this,Calibrate.class);
 //			startActivity(i);
 //		}
+		
+		//listener for button for ACTION_UP
+//		button.setOnTouchListener(new OnTouchListener() {
+//		    @Override
+//		    public boolean onTouch(View v, MotionEvent event) {
+//		        if(event.getAction() == MotionEvent.ACTION_DOWN) {
+//		            increaseSize();
+//		        } else if (event.getAction() == MotionEvent.ACTION_UP) {
+//		            resetSize();
+//		        }
+//		    }
+//		};
+		
+		
 		//start alert dialog
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setPositiveButton("FINIZH", new DialogInterface.OnClickListener(){
@@ -280,58 +294,6 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 									yData,
 									zData,
 									tData);
-		
-		/*******try writing xData to file***************/
-		boolean mExternalStorageAvailable = false;
-		boolean mExternalStorageWriteable = false;
-		String state = Environment.getExternalStorageState();
-		
-		if (Environment.MEDIA_MOUNTED.equals(state)){
-			//We can read and write the media
-			mExternalStorageAvailable = mExternalStorageWriteable = true;
-		} else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)){
-			//We can only read the media
-			mExternalStorageAvailable = true;
-			mExternalStorageWriteable = false;
-		} else{
-			//Something is wrong
-			mExternalStorageAvailable = mExternalStorageWriteable = false;
-		}
-		
-		if (mExternalStorageAvailable && mExternalStorageWriteable){
-			File path = Environment.getExternalStorageDirectory();
-			File dir = new File (path.getAbsolutePath() + "/accData");
-			dir.mkdirs();
-			String filename = "myfile.txt";
-			File file = new File(dir, filename);
-			
-			try {
-//				path.mkdirs();
-				System.out.println("Saving data to file");
-				//measurements.getxString();
-				FileOutputStream outputStream = new FileOutputStream(file);
-				//outputStream.write(measurements.getxString().getBytes());
-				outputStream.close();
-				
-				MediaScannerConnection.scanFile(this, 
-						new String[] { file.toString() }, null, 
-						new MediaScannerConnection.OnScanCompletedListener() {
-					public void onScanCompleted(String path, Uri uri) {
-						Log.i("ExternalStorage", "Scanned" + path + ":");
-						Log.i("externalStorage", "-> uri=" + uri);
-					}
-				});
-				
-			} catch (IOException e){
-				Log.w("ExternalStorage", "Error writing " + file, e);
-			}
-		}
-		else{
-			//System.out.println(mExternalStorageAvailable + " " + mExternalStorageWriteable);
-			System.out.println("COULDN'T WRITE FILE BECAUSE STORAGE NOT AVAILABLE");
-		}
-
-		/*******************************************/
 		
 		//d.toString(), then truncate to two decimal places
 		String truncate;

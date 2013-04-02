@@ -13,6 +13,12 @@
 		    android:key="measType"
 		    android:entries="@array/settings_list"
 		    android:entryValues="@array/settings_list_values" />
+		<ListPreference
+		    android:title="Choose Units"
+		    android:summary="Metric or SI?"
+		    android:key="measUnits"
+		    android:entries="@array/settings_units"
+		    android:entryValues="@array/settings_units_values" />
     </PreferenceCategory>
     <PreferenceCategory
         android:title="Calibration">
