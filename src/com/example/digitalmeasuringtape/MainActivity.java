@@ -42,10 +42,11 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	private boolean activeThread = true;
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer;
+	private Sensor mOrientation;
 	private PhysicsManager physics;
 	public SharedPreferences settings;
 	public TailLinkedList measurements;
-	public TailLinkedList angles;
+	public float[] lastOrientation;
 	public CountDownLatch gate; //things call gate.await(), and get blocked.
 								//things become unblocked when gate.countDown()
 								//is called enough times, which will be 1
@@ -71,6 +72,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		//setting up sensor managers
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+		mOrientation = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
 		//TODO tv.setText(mAccelerometer.getMinDelay()); //can't b/c min API level 9 needed
 		
 	}
@@ -150,8 +152,9 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	{		
 		//check if Calibrated is true
 		boolean CALIBRATED = settings.getBoolean("CALIBRATED", false);
+
 		if (!CALIBRATED){
-		Calibrate();
+			Calibrate();
 		}
 		else{
 		MeasureAndCalculateDistance();
@@ -195,6 +198,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		measurements = new TailLinkedList();
 //		gate = new CountDownLatch(1);
 		boolean worked = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);	
+		
 		System.out.println("Return from registerlistener: " + worked );
 		
 		try {
@@ -240,9 +244,13 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		System.out.println("Calling MeasureAndCalculateDistance()");
 		//make a fresh list, set gate as closed, register listener
 		measurements = new TailLinkedList();
+		lastOrientation = new float[3]; lastOrientation[0] = -1f; lastOrientation[1] = -1f; lastOrientation[2] = -1f;
 		gate = new CountDownLatch(1);
 		boolean worked = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);	
-		System.out.println("Return from registerlistener: " + worked );
+		boolean worked2 = mSensorManager.registerListener(this, mOrientation, SensorManager.SENSOR_DELAY_FASTEST);	
+		
+		
+		System.out.println("Return from registerlistener: " + worked  + " and " + worked2);
 		List<Sensor> l = mSensorManager.getSensorList(Sensor.TYPE_ALL);
 		for(Sensor s : l)
 			System.out.println(s.getName());
@@ -256,20 +264,22 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		
 		//stop measuring
 		mSensorManager.unregisterListener(this, mAccelerometer);
-		//mSensorManager.unregisterListener(this, mOrientation);
+		mSensorManager.unregisterListener(this, mOrientation);
+		
 		ArrayList<Float> xData = measurements.getxData();
 		ArrayList<Float> yData = measurements.getyData();
 		ArrayList<Float> zData = measurements.getzData();
+		ArrayList<Float> oxData = measurements.getoxData();
+		ArrayList<Float> oyData = measurements.getoyData();
+		ArrayList<Float> ozData = measurements.getozData();
 		ArrayList<Float> tData = measurements.gettData();
 		
-		physics.RemoveGravity(mSensorManager, xData, yData, zData);
+		physics.RemoveGravity(xData, yData, zData, oxData, oyData, ozData);
 		
 		double d = physics.Distance(xData, 
 									yData,
 									zData,
 									tData);
-		
-		System.out.println(measurements.getxString());
 		
 		/*******try writing xData to file***************/
 		boolean mExternalStorageAvailable = false;
@@ -298,9 +308,9 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 			try {
 //				path.mkdirs();
 				System.out.println("Saving data to file");
-				measurements.getxString();
+				//measurements.getxString();
 				FileOutputStream outputStream = new FileOutputStream(file);
-				outputStream.write(measurements.getxString().getBytes());
+				//outputStream.write(measurements.getxString().getBytes());
 				outputStream.close();
 				
 				MediaScannerConnection.scanFile(this, 
@@ -326,6 +336,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		//d.toString(), then truncate to two decimal places
 		String truncate;
 		if(d == -1.0) truncate = "-1.0"; 
+		if(d == 0) truncate = "0.0";
 		else
 		{
 			String d_str = Double.valueOf(d).toString(); 
@@ -386,26 +397,26 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		switch(event.sensor.getType())
 		{
 		case Sensor.TYPE_ACCELEROMETER :
-			System.out.println("Accel Sensor changed");
+			if(lastOrientation[0] == -1f && lastOrientation[1] == -1f && lastOrientation[2] == -1f) {
+				break;
+			}
 			float x = event.values[0]; 
 			float y = event.values[1];
 			float z = event.values[2];
 			long t = event.timestamp; 
 			pi_string = "x = " + x + "\ny = " + y + "\nz = " + z;
-			System.out.println(pi_string);
 			handler.sendEmptyMessage(0);
-			measurements.add(x, y, z, t); //record values.
+			measurements.add(x, y, z, lastOrientation[1], lastOrientation[2], lastOrientation[0], t); //record values.
 			break;
 		case Sensor.TYPE_ORIENTATION :
 			System.out.println("Orientation Sensor Changed");
-			float aboutz = event.values[0];
-			float aboutx = event.values[1];
-			float abouty = event.values[2];
+			lastOrientation[0] = event.values[0];
+			lastOrientation[1] = event.values[1];
+			lastOrientation[2] = event.values[2];
 			long time = event.timestamp;
-			pi_string = "Azimuth¡ = " + aboutz + "\nPitch¡ = " + aboutx + "\nYaw¡ = " + abouty;
-			System.out.println(pi_string);
-			handler.sendEmptyMessage(0);
-			angles.add(aboutz, aboutx, abouty, time);
+			//pi_string = "Azimuth¡ = " + lastOrientation[0] + "\nPitch¡ = " + lastOrientation[1] + "\nYaw¡ = " + lastOrientation[2];
+			//System.out.println(pi_string);
+			//handler.sendEmptyMessage(0);
 			break;
 			
 		}

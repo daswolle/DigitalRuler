@@ -50,6 +50,11 @@ final public class Matrix {
         return I;
     }
 
+    public double get(int i, int j)
+    {
+    	return data[i][j];
+    }
+    
     // swap rows i and j
     private void swap(int i, int j) {
         double[] temp = data[i];
