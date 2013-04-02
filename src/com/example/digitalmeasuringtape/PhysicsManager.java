@@ -298,9 +298,9 @@ public class PhysicsManager {
 			
 			for(int i=0; i < count; i ++)
 			{
-				Gx = alpha * Gx + (1 - alpha) * xData.get(i);
-				Gy = alpha * Gy + (1 - alpha) * yData.get(i);
-				Gz = alpha * Gz + (1 - alpha) * zData.get(i);
+//				Gx = alpha * Gx + (1 - alpha) * xData.get(i);
+//				Gy = alpha * Gy + (1 - alpha) * yData.get(i);
+//				Gz = alpha * Gz + (1 - alpha) * zData.get(i);
 			
 				xData.set(i, xData.get(i)-Gx);
 				yData.set(i, yData.get(i)-Gy);

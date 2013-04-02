@@ -8,7 +8,7 @@
     <PreferenceCategory 
         android:title="Measurement Type">
 		<ListPreference
-		    android:title="List Preference"
+		    android:title="Choose Measurement Type"
 		    android:summary="Choose which type of measurement"
 		    android:key="measType"
 		    android:entries="@array/settings_list"

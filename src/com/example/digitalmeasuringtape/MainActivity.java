@@ -25,7 +25,6 @@ import android.os.CountDownTimer;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -33,7 +32,6 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.TextView;
 
 public class MainActivity extends Activity implements Runnable, SensorEventListener{
@@ -151,8 +149,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	public void run()
 	{		
 		//check if Calibrated is true
-		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-		boolean CALIBRATED = sharedPref.getBoolean("CALIBRATED", false);
+		boolean CALIBRATED = settings.getBoolean("CALIBRATED", false);
 		if (!CALIBRATED){
 		Calibrate();
 		}
