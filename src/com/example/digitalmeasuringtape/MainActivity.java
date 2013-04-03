@@ -41,6 +41,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	public static final String PREFS_NAME = "MyPrefsFile";
 	public TailLinkedList measurements;
 	public float[] lastOrientation;
+	public float firstOZ = -1; //every time "collect" is called, reset this to -1
 	public CountDownLatch gate; //things call gate.await(), and get blocked.
 								//things become unblocked when gate.countDown()
 								//is called enough times, which will be 1
@@ -405,10 +406,13 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 			measurements.add(x, y, z, lastOrientation[1], lastOrientation[2], lastOrientation[0], t); //record values.
 			break;
 		case Sensor.TYPE_ORIENTATION :
+			if(firstOZ == -1){
+				firstOZ = event.values[0];
+			}
 			System.out.println("Orientation Sensor Changed");
-			lastOrientation[0] = event.values[0];
-			lastOrientation[1] = event.values[1];
-			lastOrientation[2] = event.values[2];
+			lastOrientation[0] = event.values[0]; //oz
+			lastOrientation[1] = event.values[1]; //ox
+			lastOrientation[2] = event.values[2]; //oy
 			long time = event.timestamp;
 			//pi_string = "Azimuth¡ = " + lastOrientation[0] + "\nPitch¡ = " + lastOrientation[1] + "\nYaw¡ = " + lastOrientation[2];
 			//System.out.println(pi_string);
