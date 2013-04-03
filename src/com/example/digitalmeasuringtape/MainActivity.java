@@ -1,8 +1,5 @@
 package com.example.digitalmeasuringtape;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -11,27 +8,23 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.media.MediaScannerConnection;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
-import android.view.Gravity;
+import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.WindowManager;
+import android.view.View.OnTouchListener;
+import android.widget.Button;
 import android.widget.TextView;
 
 public class MainActivity extends Activity implements Runnable, SensorEventListener{
@@ -45,6 +38,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	private Sensor mOrientation;
 	private PhysicsManager physics;
 	public SharedPreferences settings;
+	public static final String PREFS_NAME = "MyPrefsFile";
 	public TailLinkedList measurements;
 	public float[] lastOrientation;
 	public CountDownLatch gate; //things call gate.await(), and get blocked.
@@ -75,6 +69,10 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		mOrientation = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
 		//TODO tv.setText(mAccelerometer.getMinDelay()); //can't b/c min API level 9 needed
 		
+		//hookup button
+		Button button = (Button)findViewById(R.id.button1);
+		button.setOnTouchListener(myListener);
+		
 	}
 	
 	//temporary to make sure this app isn't the one draining my battery...
@@ -84,8 +82,26 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		onDestroy();
 	}
 	
+	private OnTouchListener myListener = new OnTouchListener(){
+	    public boolean onTouch(View v, MotionEvent event) {
+	        if(event.getAction() == MotionEvent.ACTION_DOWN) {
+	            //start recording
+	        	System.out.println("DOWN");
+	        	start_distance_process();
+	        	
+	        } else if (event.getAction() == MotionEvent.ACTION_UP) {
+	        	System.out.println("UP");
+	        	//kill thread on release of button
+				activeThread = false;
+				if(gate!=null)
+	            	gate.countDown(); 	
+	        }
+	        return true;
+	    }
+	};
+	
 	//connected to button's onClick
-	public void start_distance_process(View view){
+	public void start_distance_process(){
 		
 		//check if Calibrated is true
 //		SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
@@ -99,39 +115,26 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 //			Intent i = new Intent(this,Calibrate.class);
 //			startActivity(i);
 //		}
-		
-		//listener for button for ACTION_UP
-//		button.setOnTouchListener(new OnTouchListener() {
-//		    @Override
-//		    public boolean onTouch(View v, MotionEvent event) {
-//		        if(event.getAction() == MotionEvent.ACTION_DOWN) {
-//		            increaseSize();
-//		        } else if (event.getAction() == MotionEvent.ACTION_UP) {
-//		            resetSize();
-//		        }
-//		    }
-//		};
-		
-		
+				
 		//start alert dialog
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setPositiveButton("FINIZH", new DialogInterface.OnClickListener(){
-			public void onClick(DialogInterface dialog, int id){
-				//kill thread on click
-				activeThread = false;
-				if(gate!=null)
-	            	gate.countDown(); 	
-			}
-		});
-		builder.setMessage("WERKING").setTitle("TWERKING");
-		AlertDialog dialog = builder.create();
-		
-		//temporary: move dialog down
-		WindowManager.LayoutParams wmlp = dialog.getWindow().getAttributes();
-		wmlp.gravity = Gravity.TOP | Gravity.LEFT;
-		wmlp.y = 400;
-		
-		dialog.show();
+//		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//		builder.setPositiveButton("FINIZH", new DialogInterface.OnClickListener(){
+//			public void onClick(DialogInterface dialog, int id){
+//				//kill thread on click
+//				activeThread = false;
+//				if(gate!=null)
+//	            	gate.countDown(); 	
+//			}
+//		});
+//		builder.setMessage("WERKING").setTitle("TWERKING");
+//		AlertDialog dialog = builder.create();
+//		
+//		//temporary: move dialog down
+//		WindowManager.LayoutParams wmlp = dialog.getWindow().getAttributes();
+//		wmlp.gravity = Gravity.TOP | Gravity.LEFT;
+//		wmlp.y = 400;
+//		
+//		dialog.show();
 		
 		//start thread
 		System.out.println("Started distance process.");
@@ -144,6 +147,8 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
+//		Intent intent = new Intent(this, Settings.class);
+//		startActivity(intent);
 		return true;
 	}
 	
@@ -280,6 +285,9 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		mSensorManager.unregisterListener(this, mAccelerometer);
 		mSensorManager.unregisterListener(this, mOrientation);
 		
+		pi_string = "calculating";
+		handler.sendEmptyMessage(0);
+		
 		ArrayList<Float> xData = measurements.getxData();
 		ArrayList<Float> yData = measurements.getyData();
 		ArrayList<Float> zData = measurements.getzData();
@@ -305,6 +313,31 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 			truncate = d_str.substring(0, d_str.indexOf('.') + 3);
 		}
 		pi_string = truncate;
+		
+		//get shared setting for measurement units
+		SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+		String y = sPrefs.getString("meas_units", "0");
+		int UNITS = Integer.valueOf(y);
+		System.out.println("UNITS INT: " + UNITS);
+		if (UNITS == 0)
+		{
+			//convert to feet
+			System.out.println("pi_string: " + pi_string);
+			double x = Double.parseDouble(pi_string) * 3.28084;
+			
+			//round value
+			double range = 0.04;
+			int factor = (int) Math.round(x/range);
+			double result = factor * range;
+			
+			System.out.println("double pi_string: " + result);
+			pi_string = Double.toString(result) + " ft";
+		}
+		else
+		{
+			pi_string = pi_string + " m";
+		}
+		
 		handler.sendEmptyMessage(0);
 		//pd.dismiss();
 		System.out.println(truncate);
@@ -366,7 +399,8 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 			float y = event.values[1];
 			float z = event.values[2];
 			long t = event.timestamp; 
-			pi_string = "x = " + x + "\ny = " + y + "\nz = " + z;
+//			pi_string = "x = " + x + "\ny = " + y + "\nz = " + z;
+			pi_string = "collecting";
 			handler.sendEmptyMessage(0);
 			measurements.add(x, y, z, lastOrientation[1], lastOrientation[2], lastOrientation[0], t); //record values.
 			break;

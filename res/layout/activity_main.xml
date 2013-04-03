@@ -27,4 +27,16 @@
         android:text="@string/button_send"
         android:textSize="50sp" />
 
+    <Button
+        android:id="@+id/cButton"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="38dp"
+        android:layout_marginRight="26dp"
+        android:onClick="Calibrate"
+        android:text="Calibrate" />
+
 </RelativeLayout>

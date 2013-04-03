@@ -144,6 +144,12 @@ public class Calibrate extends Activity implements SensorEventListener, Runnable
     {
     	System.out.println("running thread");
 		calibrate();    	
+		
+		SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+		SharedPreferences.Editor editor = sPrefs.edit();
+		editor.putBoolean("calibrated_pref_check", true);
+		editor.commit();
+		
 		System.out.println("after calibrate");
     }
 }
