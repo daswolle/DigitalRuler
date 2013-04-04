@@ -16,7 +16,7 @@
 		<ListPreference
 		    android:title="Choose Units"
 		    android:summary="Metric or SI?"
-		    android:key="measUnits"
+		    android:key="meas_units"
 		    android:entries="@array/settings_units"
 		    android:entryValues="@array/settings_units_values" />
     </PreferenceCategory>
@@ -25,15 +25,21 @@
         <Preference
             android:title="Calibrate"
             android:summary="Set up accelerometer to be more accurate" 
-            android:key="calibrate_key">
+            android:key="run_calibrate">
               <intent
                   android:action="android.intent.action.MAIN"
                   android:targetPackage="com.example.digitalmeasuringtape"
                   android:targetClass="com.example.digitalmeasuringtape.Calibrate" />
               </Preference>
-        <Preference
+        <CheckBoxPreference
+            android:key="calibrated_pref_check"
+            android:title="Calibrated"
+            android:summary="has this device been calibrated?"
+            android:defaultValue="false"
+            />
+<!--         <Preference
             android:title="getMinDelay()"
             android:summary="returns minimum time data for a sensor to return data" 
-            android:onClick="calibrate_sensor"/>
+            android:onClick="calibrate_sensor"/> -->
     </PreferenceCategory>
 </PreferenceScreen>

@@ -37,8 +37,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	private Sensor mAccelerometer;
 	private Sensor mOrientation;
 	private PhysicsManager physics;
-	public SharedPreferences settings;
-	public static final String PREFS_NAME = "MyPrefsFile";
+	public SharedPreferences sPrefs;
 	public TailLinkedList measurements;
 	public float[] lastOrientation;
 	public float firstOZ = -1; //every time "collect" is called, reset this to -1
@@ -61,19 +60,25 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		tv = (TextView) this.findViewById(R.id.text1);
 		tv.setText("--");
 		
-		settings = getSharedPreferences("prefs", 0);
+		sPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 		physics = new PhysicsManager(this);
 		
 		//setting up sensor managers
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		mOrientation = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
-		//TODO tv.setText(mAccelerometer.getMinDelay()); //can't b/c min API level 9 needed
 		
 		//hookup button
 		Button button = (Button)findViewById(R.id.button1);
 		button.setOnTouchListener(myListener);
+	}
+	
+	@Override
+	protected void onRestart(){
+		super.onRestart();
 		
+		tv = (TextView) this.findViewById(R.id.text1);
+		tv.setText("--");		
 	}
 	
 	//temporary to make sure this app isn't the one draining my battery...
@@ -171,9 +176,10 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	public void run()
 	{		
 		//check if Calibrated is true
-		boolean CALIBRATED = settings.getBoolean("CALIBRATED", false);
+		boolean CALIBRATED = sPrefs.getBoolean("calibrated_pref_check", false);
 
 		if (!CALIBRATED){
+			//popup and say we need to calibrate
 			Calibrate();
 		}
 		else{
@@ -181,29 +187,29 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		}
 	}
 	
-	AlertDialog calibrate_dialog;
-	public void Calibrate_popup(){
-		
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setMessage("00:05").setTitle("CALIBRATING");
-			calibrate_dialog = builder.create();
-			calibrate_dialog.show();
-			
-			//TODO call Calibrate()
-			
-			new CountDownTimer(6000,1000){
-				@Override
-				public void onTick(long millisUntilFinished){
-					calibrate_dialog.setMessage("00:" + (millisUntilFinished/1000));
-				}
-				
-				@Override
-				public void onFinish(){
-					calibrate_dialog.dismiss();
-				}
-			}.start();
-		return;
-	}
+//	AlertDialog calibrate_dialog;
+//	public void Calibrate_popup(){
+//		
+//		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//			builder.setMessage("00:05").setTitle("CALIBRATING");
+//			calibrate_dialog = builder.create();
+//			calibrate_dialog.show();
+//			
+//			//TODO call Calibrate()
+//			
+//			new CountDownTimer(6000,1000){
+//				@Override
+//				public void onTick(long millisUntilFinished){
+//					calibrate_dialog.setMessage("00:" + (millisUntilFinished/1000));
+//				}
+//				
+//				@Override
+//				public void onFinish(){
+//					calibrate_dialog.dismiss();
+//				}
+//			}.start();
+//		return;
+//	}
 	
 	public void Calibrate()
 	{	
@@ -248,13 +254,12 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		yAvg /= yData.size();
 		zAvg /= zData.size();
 		
-		SharedPreferences.Editor editor = settings.edit();
+		SharedPreferences.Editor editor = sPrefs.edit();
 		System.out.println("Gx= " + xAvg + "\tGy= " + yAvg + "\tGz= " + zAvg);
 		editor.putFloat("Gravity_x", xAvg);
 		editor.putFloat("Gravity_y", yAvg);
 		editor.putFloat("Gravity_z", zAvg);
-		editor.putBoolean("CALIBRATED", true);
-		
+		editor.putBoolean("calibrated_pref_check", true);
 		editor.commit();
 		
 	}
