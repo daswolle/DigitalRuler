@@ -581,5 +581,14 @@ public class PhysicsManager {
 			rotated[2] = (float)Rotated.get(2, 0);
 			return rotated;
 		}
+		
+		public void removeOutliers(ArrayList<Float> xData, ArrayList<Float> yData) {
+			
+			for(int i = 1; i < xData.size(); i++) {
+				//TODO: check i-1, i, and i+1, decide if its an outlier, change it if it is.
+				
+			}
+			
+		}
 
 }
