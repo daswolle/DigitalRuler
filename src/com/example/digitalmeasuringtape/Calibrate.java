@@ -17,14 +17,14 @@ import android.preference.PreferenceManager;
 public class Calibrate extends Activity implements SensorEventListener, Runnable { 
 	AlertDialog dialog;
 	public CountDownLatch gate;
-	public SharedPreferences settings;	
+	public SharedPreferences sPrefs;
 	public TailLinkedList measurements;
 	private String pi_string;
 	
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 		
-        settings = getSharedPreferences("prefs", 0);
+        sPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         
 		Thread thread = new Thread(this);
 		thread.start();
@@ -51,9 +51,6 @@ public class Calibrate extends Activity implements SensorEventListener, Runnable
 		
     }
     
-
-    
-    //TODO add calibrate() function
 	public void calibrate()
 	{	
 		//setting up sensor managers
@@ -94,16 +91,13 @@ public class Calibrate extends Activity implements SensorEventListener, Runnable
 		
 		System.out.println("Gravity_x: " + xAvg);
 		
-		SharedPreferences.Editor editor = settings.edit();
+		SharedPreferences.Editor editor = sPrefs.edit();
 		editor.putFloat("Gravity_x", xAvg);
 		editor.putFloat("Gravity_y", yAvg);
-		editor.putFloat("Gravity_z", zAvg);
-		editor.putBoolean("CALIBRATED", true);
-		
+		editor.putFloat("Gravity_z", zAvg);		
 		editor.commit();
 		
-		
-		float exval = settings.getFloat("Gravity_x", -1);
+		float exval = sPrefs.getFloat("Gravity_x", -1);
 		System.out.println("exval: " + exval);
 	}
 
@@ -115,29 +109,26 @@ public class Calibrate extends Activity implements SensorEventListener, Runnable
 
 	@Override
 	public void onSensorChanged(SensorEvent event) {
-		// TODO Auto-generated method stub
 		//if (event.accuracy == SensorManager.SENSOR_STATUS_UNRELIABLE)
 		//return;
 	
-	switch(event.sensor.getType())
-	{
-	case Sensor.TYPE_ACCELEROMETER :
-		System.out.println("Accel Sensor changed");
-		float x = event.values[0]; 
-		float y = event.values[1];
-		float z = event.values[2];
-		long t = event.timestamp; 
-		pi_string = "x = " + x + "\ny = " + y + "\nz = " + z;
-		System.out.println(pi_string);
-//		handler.sendEmptyMessage(0);
-		
-		//TODO: Calibrate must now include orientation business to function correctly 
-		measurements.add(x, y, z, 0f,0f,0f, t); //record values.
-		break;
+		switch(event.sensor.getType())
+		{
+		case Sensor.TYPE_ACCELEROMETER :
+			System.out.println("Accel Sensor changed");
+			float x = event.values[0]; 
+			float y = event.values[1];
+			float z = event.values[2];
+			long t = event.timestamp; 
+			pi_string = "x = " + x + "\ny = " + y + "\nz = " + z;
+			System.out.println(pi_string);
+	//		handler.sendEmptyMessage(0);
+			
+			//TODO: Calibrate must now include orientation business to function correctly 
+			measurements.add(x, y, z, 0f,0f,0f, t); //record values.
+			break;
+		}
 	}
-	}
-
-
 
 	@Override
     public void run()
@@ -145,7 +136,8 @@ public class Calibrate extends Activity implements SensorEventListener, Runnable
     	System.out.println("running thread");
 		calibrate();    	
 		
-		SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+		//save calibrated setting
+		sPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 		SharedPreferences.Editor editor = sPrefs.edit();
 		editor.putBoolean("calibrated_pref_check", true);
 		editor.commit();
