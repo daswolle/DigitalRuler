@@ -4,7 +4,7 @@
         android:title="About" 
         android:enabled="false"
         android:selectable="false"
-        android:summary="Developed because we can. For the good of all of us. Except the ones who are dead. But there's no sense crying over every mistake. You just keep on trying till you run out of cake. And the science gets done."/>
+        android:summary="Developed because we can. For the good of all of us. Except the ones who are dead. But there's no sense crying over every mistake. You just keep on trying till you run out of cake. And the science gets done. And you make a neat app. For the people who are still alive."/>
     <PreferenceCategory 
         android:title="Measurement Type">
 		<ListPreference

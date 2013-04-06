@@ -14,7 +14,7 @@ public class PhysicsManager {
 		public PhysicsManager(MainActivity main)
 		{
 			this.main = main;
-			settings = main.settings;
+			settings = main.sPrefs;
 		}
 		
 	@SuppressWarnings("unused")

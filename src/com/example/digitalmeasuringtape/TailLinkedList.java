@@ -11,7 +11,7 @@ public class TailLinkedList {
   public ArrayList<Float> oxData;
   public ArrayList<Float> oyData;
   public ArrayList<Float> ozData;
-  public ArrayList<Long> tData;
+  public ArrayList<Float> tData;
 
   public TailLinkedList() {
 	  head = null;
@@ -22,7 +22,7 @@ public class TailLinkedList {
 	  oxData = new ArrayList<Float>();
 	  oyData = new ArrayList<Float>();
 	  ozData = new ArrayList<Float>();
-	  tData = new ArrayList<Long>();
+	  tData = new ArrayList<Float>();
   }
 
   public TailLinkedList(Node firstNode) {
@@ -34,7 +34,7 @@ public class TailLinkedList {
 	  oxData = new ArrayList<Float>();
 	  oyData = new ArrayList<Float>();
 	  ozData = new ArrayList<Float>();
-	  tData = new ArrayList<Long>();
+	  tData = new ArrayList<Float>();
   }
 
   public void add(float x, float y, float z, float ox, float oy, float oz, long time) {
@@ -80,7 +80,7 @@ public class TailLinkedList {
 		  oxData.add(trav.ox);
 		  oyData.add(trav.oy);
 		  ozData.add(trav.oz);
-		  tData.add(trav.time);
+		  tData.add((float)trav.time);
 		  trav = trav.next;
 	  }
 	  return;
