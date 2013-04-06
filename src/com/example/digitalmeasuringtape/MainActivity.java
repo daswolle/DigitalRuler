@@ -1,12 +1,11 @@
 package com.example.digitalmeasuringtape;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -29,9 +28,8 @@ import android.widget.TextView;
 
 public class MainActivity extends Activity implements Runnable, SensorEventListener{
 
-	private String pi_string;
-	private TextView tv;
-	private ProgressDialog pd;
+	private static String pi_string;
+	private static TextView tv;
 	private boolean activeThread = true;
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer;
@@ -178,16 +176,11 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		measurements.unravel();
 		
 		physics.RemoveGravity(	measurements.xData, 
-								measurements.yData, 
-								measurements.zData, 
-								measurements.oxData, 
-								measurements.oyData, 
-								measurements.ozData
+								measurements.yData
 								);
 		
 		double d = physics.Distance(measurements.xData, 
 									measurements.yData,
-									measurements.zData,
 									measurements.tData);
 		
 		//d.toString(), then truncate to two decimal places
@@ -249,7 +242,6 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		try {
 			gate.await();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -270,7 +262,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
             // forcing the loop from the Thread to end
             activeThread = false;
             if(gate!=null)
-            	gate.countDown(); 	//causes the thread's "run" method to contine.
+            	gate.countDown(); 	//causes the thread's "run" method to continue.
             						//"opens the gate"
         }
         
@@ -292,7 +284,8 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
     }
 	
 	//Receive thread messages, interpret them and act as needed
-	private Handler handler = new Handler(){
+	@SuppressLint("HandlerLeak")
+	private static Handler handler = new Handler(){
 		@Override
 		public void handleMessage(Message mg){
 			//pd.dismiss();
@@ -301,17 +294,13 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	};
 	
 	public void onSensorChanged(SensorEvent event) {
-		//if (event.accuracy == SensorManager.SENSOR_STATUS_UNRELIABLE)
-			//return;
-			
-			float x = event.values[0]; 
-			float y = event.values[1];
-			float z = event.values[2];
-			long t = event.timestamp; 
-//			pi_string = "x = " + x + "\ny = " + y + "\nz = " + z;
-			pi_string = "collecting";
-			handler.sendEmptyMessage(0);
-			measurements.add(x, y, t); //record values.
+		System.out.println("Measure: Accel Sensor Changed");
+		float x = event.values[0]; 
+		float y = event.values[1];
+		long t = event.timestamp;
+		pi_string = "collecting";
+		handler.sendEmptyMessage(0);
+		measurements.add(x, y, t); //record values.
 			
 	}
 	

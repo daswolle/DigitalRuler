@@ -413,8 +413,7 @@ public class PhysicsManager {
 		}
 
 		public void RemoveGravity(  		ArrayList<Float> xData,
-											ArrayList<Float> yData,
-											ArrayList<Float> zData
+											ArrayList<Float> yData
 											)
 		{
 			//Very basic. Simply subtracts calibrated gravity from all measurements
@@ -425,54 +424,14 @@ public class PhysicsManager {
 			
 			float Gx = settings.getFloat("Gravity_x", 0);
 			float Gy = settings.getFloat("Gravity_y", 0);
-			float Gz = settings.getFloat("Gravity_z", 0);
 			
 			for(int i=0; i < count; i ++)
 			{
 				xData.set(i, xData.get(i)-Gx);
 				yData.set(i, yData.get(i)-Gy);
-				zData.set(i, zData.get(i)-Gz);
 			}
 			
 			
-		}
-<<<<<<< HEAD
-		
-		public float[] Rotate(float x, float y, float z, float theta, float phi, float psi )
-		{
-			double cosTheta = Math.cos(theta);
-			double sinTheta = Math.sin(theta);
-			double cosPsi = Math.cos(psi);
-			double sinPsi = Math.sin(psi);
-			double cosPhi = Math.cos(phi);
-			double sinPhi = Math.sin(phi);
-			
-			double[][] arr_XYZ = 
-				{
-					{x},
-					{y},
-					{z}
-				};
-			
-			double[][] arr_R =	
-				{	
-					{cosTheta * cosPsi,		sinPhi*sinTheta * cosPsi - cosPhi * sinPsi,		cosPhi * sinTheta * cosPsi + sinPhi *sinPsi},
-					{cosTheta * sinPsi,		sinPhi * sinTheta * sinPsi + cosPhi *cosPsi,	cosPhi*sinTheta*sinPsi - sinPhi*cosPsi},
-					{-sinTheta,				sinPhi * cosTheta,								cosPhi * cosTheta}	
-				};
-					
-			Matrix XYZ = new Matrix(arr_XYZ);
-			Matrix R = new Matrix(arr_R);
-			//R = R.transpose();
-			
-			Matrix Rotated = R.times(XYZ);
-			
-			//not done
-			float[] rotated = new float[3];
-			rotated[0] = (float)Rotated.get(0,0);
-			rotated[1] = (float)Rotated.get(1, 0);
-			rotated[2] = (float)Rotated.get(2, 0);
-			return rotated;
 		}
 		
 		public void removeOutliers(ArrayList<Float> xData, ArrayList<Float> yData) {
@@ -483,7 +442,6 @@ public class PhysicsManager {
 			}
 			
 		}
-=======
->>>>>>> ab8b1560066afd8305907d5a74ee8189ed58a1df
+
 
 }
