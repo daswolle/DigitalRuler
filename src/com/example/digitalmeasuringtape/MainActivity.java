@@ -40,7 +40,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	public SharedPreferences sPrefs;
 	public TailLinkedList measurements;
 	public float[] lastOrientation;
-	public float firstOZ = -1; //every time "collect" is called, reset this to -1
+	public float firstOZ; //every time "collect" is called, reset this to -1
 	public CountDownLatch gate; //things call gate.await(), and get blocked.
 								//things become unblocked when gate.countDown()
 								//is called enough times, which will be 1
@@ -171,20 +171,20 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	
 /***********end menu stuff***********/	
 	
-	//put the code to be run during execution here.
-	//this can be thought of as the main method of our thread.
+	//main method for thread
 	public void run()
 	{		
 		//check if Calibrated is true
 		boolean CALIBRATED = sPrefs.getBoolean("calibrated_pref_check", false);
 
-		if (!CALIBRATED){
-			//popup and say we need to calibrate
-			Calibrate();
-		}
-		else{
-		MeasureAndCalculateDistance();
-		}
+
+		//if (!CALIBRATED){
+		//	TODO: Launch Calibrate activity
+		//}
+		//else{
+		Measure();
+		//}
+
 	}
 	
 //	AlertDialog calibrate_dialog;
@@ -211,103 +211,29 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 //		return;
 //	}
 	
-	public void Calibrate()
-	{	
+	public void Measure(){
 		
-		//call calibrate activity
-		Intent intent = new Intent(this,Calibrate.class);
-		startActivity(intent);
+		System.out.println("Calling Measure");
 		
-		
-		System.out.println("Calling Calibrate()");
-		//make a fresh list, set gate as closed, register listener
-		measurements = new TailLinkedList();
-//		gate = new CountDownLatch(1);
-		boolean worked = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);	
-		
-		System.out.println("Return from registerlistener: " + worked );
-		
-		try {
-			Thread.sleep(1000);
-			//gate.await();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		mSensorManager.unregisterListener(this, mAccelerometer);
-		//mSensorManager.unregisterListener(this, mOrientation);
-		ArrayList<Float> xData = measurements.getxData();
-		ArrayList<Float> yData = measurements.getyData();
-		ArrayList<Float> zData = measurements.getzData();
-		
-		float xAvg = 0, yAvg = 0, zAvg = 0;
-		
-		for(int i = 0; i < xData.size(); i ++)
-		{
-			xAvg += xData.get(i);
-			yAvg += yData.get(i);
-			zAvg += zData.get(i);
-		}
-		
-		xAvg /= xData.size();
-		yAvg /= yData.size();
-		zAvg /= zData.size();
-		
-		SharedPreferences.Editor editor = sPrefs.edit();
-		System.out.println("Gx= " + xAvg + "\tGy= " + yAvg + "\tGz= " + zAvg);
-		editor.putFloat("Gravity_x", xAvg);
-		editor.putFloat("Gravity_y", yAvg);
-		editor.putFloat("Gravity_z", zAvg);
-		editor.putBoolean("calibrated_pref_check", true);
-		editor.commit();
-		
-	}
-	
-	public void MeasureAndCalculateDistance(){
-		
-		System.out.println("Calling MeasureAndCalculateDistance()");
-		//make a fresh list, set gate as closed, register listener
-		measurements = new TailLinkedList();
-		lastOrientation = new float[3]; lastOrientation[0] = -1f; lastOrientation[1] = -1f; lastOrientation[2] = -1f;
-		gate = new CountDownLatch(1);
-		boolean worked = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);	
-		boolean worked2 = mSensorManager.registerListener(this, mOrientation, SensorManager.SENSOR_DELAY_FASTEST);	
-		
-		
-		System.out.println("Return from registerlistener: " + worked  + " and " + worked2);
-		List<Sensor> l = mSensorManager.getSensorList(Sensor.TYPE_ALL);
-		for(Sensor s : l)
-			System.out.println(s.getName());
-		
-		try {
-			gate.await();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		//stop measuring
-		mSensorManager.unregisterListener(this, mAccelerometer);
-		mSensorManager.unregisterListener(this, mOrientation);
+		Collect();
 		
 		pi_string = "calculating";
 		handler.sendEmptyMessage(0);
 		
-		ArrayList<Float> xData = measurements.getxData();
-		ArrayList<Float> yData = measurements.getyData();
-		ArrayList<Float> zData = measurements.getzData();
-		ArrayList<Float> oxData = measurements.getoxData();
-		ArrayList<Float> oyData = measurements.getoyData();
-		ArrayList<Float> ozData = measurements.getozData();
-		ArrayList<Float> tData = measurements.gettData();
+		measurements.unravel();
 		
-		physics.RemoveGravity(xData, yData, zData, oxData, oyData, ozData);
+		physics.RemoveGravity(	measurements.xData, 
+								measurements.yData, 
+								measurements.zData, 
+								measurements.oxData, 
+								measurements.oyData, 
+								measurements.ozData
+								);
 		
-		double d = physics.Distance(xData, 
-									yData,
-									zData,
-									tData);
+		double d = physics.Distance(measurements.xData, 
+									measurements.yData,
+									measurements.zData,
+									measurements.tData);
 		
 		//d.toString(), then truncate to two decimal places
 		String truncate;
@@ -347,7 +273,39 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		handler.sendEmptyMessage(0);
 		//pd.dismiss();
 		System.out.println(truncate);
-		System.out.println("returning from run()");
+		System.out.println("returning from Measure()");
+		}
+	
+	//returns nothing, but results in "measurements" containing measured accels and angles
+	public void Collect(){
+		
+		System.out.println("Calling Collect()");
+		
+		measurements = new TailLinkedList();
+		lastOrientation = new float[3]; lastOrientation[0] = -1f; lastOrientation[1] = -1f; lastOrientation[2] = -1f;
+		firstOZ = -1; 
+		gate = new CountDownLatch(1);
+		
+		boolean worked = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);	
+		boolean worked2 = mSensorManager.registerListener(this, mOrientation, SensorManager.SENSOR_DELAY_FASTEST);	
+		
+		System.out.println("Return from registerlistener: " + worked  + " and " + worked2);
+		List<Sensor> l = mSensorManager.getSensorList(Sensor.TYPE_ALL);
+		for(Sensor s : l)
+			System.out.println(s.getName());
+		
+		try {
+			gate.await();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		//stop measuring
+		mSensorManager.unregisterListener(this, mAccelerometer);
+		mSensorManager.unregisterListener(this, mOrientation);
+		
+		System.out.println("returning from Collect()");
 		}
 	
 	
@@ -408,7 +366,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 //			pi_string = "x = " + x + "\ny = " + y + "\nz = " + z;
 			pi_string = "collecting";
 			handler.sendEmptyMessage(0);
-			measurements.add(x, y, z, lastOrientation[1], lastOrientation[2], lastOrientation[0], t); //record values.
+			measurements.add(x, y, z, lastOrientation[1], lastOrientation[2], lastOrientation[0] - firstOZ, t); //record values.
 			break;
 		case Sensor.TYPE_ORIENTATION :
 			if(firstOZ == -1){

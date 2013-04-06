@@ -75,9 +75,9 @@ public class Calibrate extends Activity implements SensorEventListener, Runnable
 		
 		mSensorManager.unregisterListener(this, mAccelerometer);
 		//mSensorManager.unregisterListener(this, mOrientation);
-		ArrayList<Float> xData = measurements.getxData();
-		ArrayList<Float> yData = measurements.getyData();
-		ArrayList<Float> zData = measurements.getzData();
+		ArrayList<Float> xData = measurements.xData;
+		ArrayList<Float> yData = measurements.yData;
+		ArrayList<Float> zData = measurements.zData;
 		
 		float xAvg = 0, yAvg = 0, zAvg = 0;
 		
