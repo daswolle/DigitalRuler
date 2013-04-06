@@ -480,70 +480,28 @@ public class PhysicsManager {
 
 		public void RemoveGravity(  		ArrayList<Float> xData,
 											ArrayList<Float> yData,
-											ArrayList<Float> zData,
-											
-											ArrayList<Float> oxData,
-											ArrayList<Float> oyData,
-											ArrayList<Float> ozData
+											ArrayList<Float> zData
 											)
 		{
-			/*
-			 * Removes gravity via high-pass filter 
-			 * */
 			
 			System.out.println("Entering RemoveGravity");
 				
 			int count = xData.size(); //we assume all array lists are the same size because of their construction
 			
-			float Gx = 0f;//settings.getFloat("Gravity_x", 0);
-			float Gy = 0f;//settings.getFloat("Gravity_y", 0);
-			float Gz = 9.8f;//settings.getFloat("Gravity_z", 0);
-			//final float alpha = 0.9f;
-			
-			
-			System.out.println("OX angles: " + oxData);
-			System.out.println("OY angles: " + oyData);
-			System.out.println("OZ angles: " + ozData);
-			
+			float Gx = settings.getFloat("Gravity_x", 0);
+			float Gy = settings.getFloat("Gravity_y", 0);
+			float Gz = settings.getFloat("Gravity_z", 0);
 			
 			for(int i=0; i < count; i ++)
 			{
-
-//				Gx = alpha * Gx + (1 - alpha) * xData.get(i);
-//				Gy = alpha * Gy + (1 - alpha) * yData.get(i);
-//				Gz = alpha * Gz + (1 - alpha) * zData.get(i);
-			
-				//xData.set(i, xData.get(i)-Gx);
-				//yData.set(i, yData.get(i)-Gy);
-				//zData.set(i, zData.get(i)-Gz);
-				
-				float x = xData.get(i);
-				float y = yData.get(i);
-				float z = zData.get(i);
-				
-				float ox = oxData.get(i);
-				float oy = oyData.get(i);
-				float oz = ozData.get(i);
-				
-				float[] rotatedGravity = Rotate(Gx, Gy, Gz, ox, oy, oz);
-				x -= rotatedGravity[0];
-				y -= rotatedGravity[1];
-				z -= rotatedGravity[2];
-				
-				//replacing original measurement with (measurement - gravity)
-				xData.set(i, x);
-				yData.set(i, y);
-				zData.set(i, z);
-				
-				System.out.printf("Step %d: Removing gravity of [ %f, %f, %f]=%f\n", i,
-																				rotatedGravity[0],
-																				rotatedGravity[1],
-																				rotatedGravity[2],
-																				Math.sqrt(rotatedGravity[0] * rotatedGravity[0] + rotatedGravity[1] * rotatedGravity[1] + rotatedGravity[2] * rotatedGravity[2]));
+				xData.set(i, xData.get(i)-Gx);
+				yData.set(i, yData.get(i)-Gy);
+				zData.set(i, zData.get(i)-Gz);
 			}
 			
 			
 		}
+<<<<<<< HEAD
 		
 		public float[] Rotate(float x, float y, float z, float theta, float phi, float psi )
 		{
@@ -590,5 +548,7 @@ public class PhysicsManager {
 			}
 			
 		}
+=======
+>>>>>>> ab8b1560066afd8305907d5a74ee8189ed58a1df
 
 }
