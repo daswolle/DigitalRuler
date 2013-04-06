@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.hardware.Sensor;
@@ -15,7 +16,6 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
@@ -71,6 +71,27 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		//hookup button
 		Button button = (Button)findViewById(R.id.button1);
 		button.setOnTouchListener(myListener);
+		
+		
+		//check if Calibrated is true
+		boolean CALIBRATED = sPrefs.getBoolean("calibrated_pref_check", false);
+
+		if (!CALIBRATED){
+			//popup and say we need to calibrate
+			final Intent i = new Intent(this,Calibrate.class);		
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setPositiveButton("Ok. Calibrate me!", new DialogInterface.OnClickListener(){
+				public void onClick(DialogInterface dialog, int id){
+					//continue
+					dialog.dismiss();
+					startActivity(i);
+				}
+			});
+			builder.setMessage("We can't measure without Calibrating! Place the phone somewhere level and give us a few seconds to calibrate.").setTitle("WAIT!");
+			AlertDialog dialog = builder.create();
+			dialog.show();			
+		}
+		
 	}
 	
 	@Override
@@ -175,93 +196,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	//this can be thought of as the main method of our thread.
 	public void run()
 	{		
-		//check if Calibrated is true
-		boolean CALIBRATED = sPrefs.getBoolean("calibrated_pref_check", false);
-
-		if (!CALIBRATED){
-			//popup and say we need to calibrate
-			Calibrate();
-		}
-		else{
 		MeasureAndCalculateDistance();
-		}
-	}
-	
-//	AlertDialog calibrate_dialog;
-//	public void Calibrate_popup(){
-//		
-//		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-//			builder.setMessage("00:05").setTitle("CALIBRATING");
-//			calibrate_dialog = builder.create();
-//			calibrate_dialog.show();
-//			
-//			//TODO call Calibrate()
-//			
-//			new CountDownTimer(6000,1000){
-//				@Override
-//				public void onTick(long millisUntilFinished){
-//					calibrate_dialog.setMessage("00:" + (millisUntilFinished/1000));
-//				}
-//				
-//				@Override
-//				public void onFinish(){
-//					calibrate_dialog.dismiss();
-//				}
-//			}.start();
-//		return;
-//	}
-	
-	public void Calibrate()
-	{	
-		
-		//call calibrate activity
-		Intent intent = new Intent(this,Calibrate.class);
-		startActivity(intent);
-		
-		
-		System.out.println("Calling Calibrate()");
-		//make a fresh list, set gate as closed, register listener
-		measurements = new TailLinkedList();
-//		gate = new CountDownLatch(1);
-		boolean worked = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);	
-		
-		System.out.println("Return from registerlistener: " + worked );
-		
-		try {
-			Thread.sleep(1000);
-			//gate.await();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		mSensorManager.unregisterListener(this, mAccelerometer);
-		//mSensorManager.unregisterListener(this, mOrientation);
-		ArrayList<Float> xData = measurements.getxData();
-		ArrayList<Float> yData = measurements.getyData();
-		ArrayList<Float> zData = measurements.getzData();
-		
-		float xAvg = 0, yAvg = 0, zAvg = 0;
-		
-		for(int i = 0; i < xData.size(); i ++)
-		{
-			xAvg += xData.get(i);
-			yAvg += yData.get(i);
-			zAvg += zData.get(i);
-		}
-		
-		xAvg /= xData.size();
-		yAvg /= yData.size();
-		zAvg /= zData.size();
-		
-		SharedPreferences.Editor editor = sPrefs.edit();
-		System.out.println("Gx= " + xAvg + "\tGy= " + yAvg + "\tGz= " + zAvg);
-		editor.putFloat("Gravity_x", xAvg);
-		editor.putFloat("Gravity_y", yAvg);
-		editor.putFloat("Gravity_z", zAvg);
-		editor.putBoolean("calibrated_pref_check", true);
-		editor.commit();
-		
 	}
 	
 	public void MeasureAndCalculateDistance(){
