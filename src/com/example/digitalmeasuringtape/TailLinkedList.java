@@ -54,25 +54,12 @@ public class TailLinkedList {
    }
   }
   
-  
-  	  
-//  public String getxString(){
-//	  String xData = "";
-//	  System.out.println("Entering getxString");
-//	  Node trav = head;
-//	  if (trav == null) return null;
-//	  while(trav.next != null){
-//		  xData = xData + "," + trav.x;
-//		  trav = trav.next;
-//	  }
-//	  return xData;
-//  }
-  
-  
   public void unravel(){
 	  System.out.println("Entering Unravel");
 	  Node trav = head;
 	  if(trav == null) return;
+	  float t0 = trav.time;
+	  float t;
 	  while(trav.next != null) {
 		  xData.add(trav.x);
 		  yData.add(trav.y);
@@ -80,101 +67,15 @@ public class TailLinkedList {
 		  oxData.add(trav.ox);
 		  oyData.add(trav.oy);
 		  ozData.add(trav.oz);
-		  tData.add((float)trav.time);
+		  t = trav.time - t0;
+		  t /= 1000000000.0;
+		  System.out.printf("%f - %f = %f\n", (float)trav.time, t0, t);
+		  tData.add((float)t);
 		  trav = trav.next;
 	  }
 	  return;
   }
   
-  public ArrayList<Float> getxData() {
-   System.out.println("Entering getxData");
-   ArrayList<Float> xDataToReturn = new ArrayList<Float>();
-   Node trav = head;
-   if (trav == null) return null;
-   while(trav.next != null) {
-    xDataToReturn.add(trav.x);
-    trav = trav.next;
-   }
-   return xData;
-  }
-
-  public ArrayList<Float> getyData() {
-	  System.out.println("Entering getyData");
-   ArrayList<Float> yDataToReturn = new ArrayList<Float>();
-   Node trav = head;
-   if (trav == null) return null;
-   while(trav.next != null) {
-    yDataToReturn.add(trav.y);
-    trav = trav.next;
-   }
-   return yData;
-  }
-
-  public ArrayList<Float> getzData() {
-	  System.out.println("Entering getzData");
-   ArrayList<Float> zDataToReturn = new ArrayList<Float>();
-   Node trav = head;
-   if (trav == null) return null;
-   while(trav.next != null) {
-	   zDataToReturn.add(trav.z);
-	   trav = trav.next;
-   }
-   return zData;
-  	}
-
-  public ArrayList<Float> gettData() {
-	  System.out.println("Entering gettData");
-	ArrayList<Float> tDataToReturn = new ArrayList<Float>();
-	Node trav = head;
-	if (trav == null) return null;
-	float t0 = trav.time;
-	while(trav.next != null) {
-		//float t = trav.time;
-		double t = (double)trav.time - t0;
-		//t = t % 1000000;
-		t = t / 1000000000.0;
-		tDataToReturn.add((float)t); 
-		trav = trav.next;
-	}
-	return tData;
-  }
-  
-  public ArrayList<Float> getoxData() {
-	   System.out.println("Entering getoxData");
-	   ArrayList<Float> oxDataToReturn = new ArrayList<Float>();
-	   Node trav = head;
-	   if (trav == null) return null;
-	   while(trav.next != null) {
-	    oxDataToReturn.add(trav.ox);
-	    trav = trav.next;
-	   }
-	   return oxData;
-	  }
-  
-  public ArrayList<Float> getoyData() {
-	   System.out.println("Entering getoyData");
-	   ArrayList<Float> oyDataToReturn = new ArrayList<Float>();
-	   Node trav = head;
-	   if (trav == null) return null;
-	   while(trav.next != null) {
-	    oyDataToReturn.add(trav.oy);
-	    trav = trav.next;
-	   }
-	   return oyData;
-	  }
-  
-  public ArrayList<Float> getozData() {
-	   System.out.println("Entering getozData");
-	   ArrayList<Float> ozDataToReturn = new ArrayList<Float>();
-	   Node trav = head;
-	   if (trav == null) return null;
-	   while(trav.next != null) {
-	    ozDataToReturn.add(trav.oz);
-	    trav = trav.next;
-	   }
-	   return ozData;
-	  }
-
   private class Node {
   	public float x;
   	public float y;

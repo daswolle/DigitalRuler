@@ -26,13 +26,13 @@ public class PhysicsManager {
 		{
 			float distance;
 			//distance = Eulers(x_accel, y_accel,z_accel, t);
-			distance = Improved_Eulers(x_accel, y_accel,z_accel, t);
+			//distance = Improved_Eulers(x_accel, y_accel,z_accel, t);
+			distance = Simpsons(x_accel, y_accel, z_accel, t);
 			System.out.println("Just calculated distance of: " + distance);
 			System.out.println("x: "+x_accel);
 			System.out.println("y: "+y_accel);
 			System.out.println("z: "+z_accel);
 			System.out.println("t: "+t);
-			//distace = Simpsons(x_accel, y_accel, z_accel, t);
 			return distance;
 		}
 	
