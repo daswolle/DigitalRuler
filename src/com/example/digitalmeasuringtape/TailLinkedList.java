@@ -69,7 +69,6 @@ public class TailLinkedList {
 		  ozData.add(trav.oz);
 		  t = trav.time - t0;
 		  t /= 1000000000.0;
-		  System.out.printf("%f - %f = %f\n", (float)trav.time, t0, t);
 		  tData.add((float)t);
 		  trav = trav.next;
 	  }
