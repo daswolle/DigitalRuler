@@ -20,43 +20,37 @@ public class PhysicsManager {
 	@SuppressWarnings("unused")
 	
 		public float Distance(	ArrayList<Float> x_accel, 
-								ArrayList<Float> y_accel, 
-								ArrayList<Float> z_accel,
+								ArrayList<Float> y_accel,
 								ArrayList<Float> t)
 		{
 			float distance;
-			//distance = Eulers(x_accel, y_accel,z_accel, t);
-			//distance = Improved_Eulers(x_accel, y_accel,z_accel, t);
-			distance = Simpsons(x_accel, y_accel, z_accel, t);
+			//distance = Eulers(x_accel, y_accel, t);
+			//distance = Improved_Eulers(x_accel, y_accel, t);
+			distance = Simpsons(x_accel, y_accel, t);
 			System.out.println("Just calculated distance of: " + distance);
 			System.out.println("x: "+x_accel);
 			System.out.println("y: "+y_accel);
-			System.out.println("z: "+z_accel);
 			System.out.println("t: "+t);
 			return distance;
 		}
-	
+
 		public float Eulers(	ArrayList<Float> x_accel, 
-										ArrayList<Float> y_accel, 
-										ArrayList<Float> z_accel,
-										ArrayList<Float> t)
+								ArrayList<Float> y_accel, 
+								ArrayList<Float> t)
 		{
 			if(t == null) return -1;
 			
 			System.out.println("Entering Eulers Distance method");
 			System.out.println("x: "+x_accel);
 			System.out.println("y: "+y_accel);
-			System.out.println("z: "+z_accel);
 			System.out.println("t: "+t);
 			
 			//This is the Euler's method.
 			ArrayList<Float> dx_veloc = new ArrayList<Float>(); 
 			ArrayList<Float> dy_veloc = new ArrayList<Float>();
-			ArrayList<Float> dz_veloc = new ArrayList<Float>();
 			
 			ArrayList<Float> x_veloc = new ArrayList<Float>(); x_veloc.add(0f);
 			ArrayList<Float> y_veloc = new ArrayList<Float>(); y_veloc.add(0f);
-			ArrayList<Float> z_veloc = new ArrayList<Float>(); z_veloc.add(0f);
 			
 			//compose velocity
 			final int STEPS = t.size();
@@ -66,12 +60,10 @@ public class PhysicsManager {
 			{	
 				//x'_i = x''_(i-1) * dt
 				//y'_i = y''_(i-1) * dt
-				//z'_i = z''_(i-1) * dt
 				dt = t.get(i+1) - t.get(i);
 				dx_veloc.add(  x_accel.get(i) * dt);
 				dy_veloc.add(  y_accel.get(i) * dt);
-				dz_veloc.add(  z_accel.get(i) * dt);
-				System.out.println("Step: " + i + "\ndt: " + dt + "\n\tv_x:"+ dx_veloc.get(i) + "\n\tv_y: " + dy_veloc.get(i) + "\n\tv_z: " + dz_veloc.get(i));
+				System.out.println("Step: " + i + "\ndt: " + dt + "\n\tv_x:"+ dx_veloc.get(i) + "\n\tv_y: " + dy_veloc.get(i));
 			}
 			float temp = 0f;
 			for(float d : dx_veloc)
@@ -80,27 +72,19 @@ public class PhysicsManager {
 					x_veloc.add(temp);
 				}
 			
-			temp = 0;
+			temp = 0f;
 			for(float d : dy_veloc)
 				{
 					temp += d;
 					y_veloc.add(temp);
 				}
-			
-			temp = 0;
-			for(float d : dz_veloc)
-				{
-					temp += d;
-					z_veloc.add(temp);
-				} 
+
 			
 			ArrayList<Float> dx_disp = new ArrayList<Float>();
 			ArrayList<Float> dy_disp = new ArrayList<Float>();
-			ArrayList<Float> dz_disp = new ArrayList<Float>();
 			
 			ArrayList<Float> x_disp = new ArrayList<Float>(); x_disp.add(0f);
 			ArrayList<Float> y_disp = new ArrayList<Float>(); y_disp.add(0f);
-			ArrayList<Float> z_disp = new ArrayList<Float>(); z_disp.add(0f);
 			
 			//compose displacement
 			System.out.println("Composing Displacement from Velocity...\n");
@@ -108,13 +92,11 @@ public class PhysicsManager {
 			{	
 				//x_i = x'_(i-1) * dt
 				//y_i = y'_(i-1) * dt
-				//z_i = z'_(i-1) * dt
 				dt = t.get(i+1) - t.get(i);
 				dx_disp.add( x_veloc.get(i) * dt);
 				dy_disp.add( y_veloc.get(i) * dt);
-				dz_disp.add( z_veloc.get(i) * dt);
 				
-				System.out.println("Step: " + i + "\ndt: " + dt + "\n\td_x:"+ dx_disp.get(i) + "\n\td_y: " + dy_disp.get(i) + "\n\td_z: " + dz_disp.get(i));
+				System.out.println("Step: " + i + "\ndt: " + dt + "\n\td_x:"+ dx_disp.get(i) + "\n\td_y: " + dy_disp.get(i));
 			}
 			
 			//compose total displacement
@@ -124,21 +106,19 @@ public class PhysicsManager {
 			{
 				//vector addition, constructing R
 				System.out.println("Composing R...\n");
-				float r[] = new float[3]; //[x, y, z]
+				float r[] = new float[2]; //[x, y]
 				for( int i = 0; i < STEPS-1; i++)
 				{
 					r[0] += dx_disp.get(i);
 					r[1] += dy_disp.get(i);
-					r[2] += dz_disp.get(i);
-					System.out.println("Step: " + i + "\n\tr_x: "+ r[0] + "\n\tr_y: " + r[1] + "\n\tr_z: " + r[2]);
+					System.out.println("Step: " + i + "\n\tr_x: "+ r[0] + "\n\tr_y: " + r[1]);
 				}
 			
 				//Distance formula, constructing D
 				//D = sqrt(X^2 + Y^2 + Z^2)
 				distance =  FloatMath.sqrt( 
 								(float)Math.pow(r[0], 2) + 
-								(float)Math.pow(r[1], 2) //+
-								//(float)Math.pow(r[2], 2)
+								(float)Math.pow(r[1], 2) 
 								);
 				return distance;
 			}
@@ -151,8 +131,7 @@ public class PhysicsManager {
 					//dD = sqrt( dx^2 + dy^2 + dz^2 )
 					distance += Math.sqrt(
 									Math.pow(dx_disp.get(i), 2) +
-									Math.pow(dy_disp.get(i), 2) +
-									Math.pow(dz_disp.get(i), 2)
+									Math.pow(dy_disp.get(i), 2) 
 									);
 				}		
 				return distance;
@@ -161,8 +140,7 @@ public class PhysicsManager {
 	}
 
 		public float Improved_Eulers (	ArrayList<Float> x_accel, 
-										ArrayList<Float> y_accel, 
-										ArrayList<Float> z_accel,
+										ArrayList<Float> y_accel,
 										ArrayList<Float> t)
 		{	
 			if(t == null) return -1;
@@ -171,11 +149,9 @@ public class PhysicsManager {
 			
 			ArrayList<Float> dx_veloc = new ArrayList<Float>(); 
 			ArrayList<Float> dy_veloc = new ArrayList<Float>();
-			ArrayList<Float> dz_veloc = new ArrayList<Float>();
 			
 			ArrayList<Float> x_veloc = new ArrayList<Float>(); x_veloc.add(0f);
 			ArrayList<Float> y_veloc = new ArrayList<Float>(); y_veloc.add(0f);
-			ArrayList<Float> z_veloc = new ArrayList<Float>(); z_veloc.add(0f);
 			
 			int STEPS = x_accel.size();
 			float dt;
@@ -184,13 +160,12 @@ public class PhysicsManager {
 			{
 				//dx'_i = dx''_(i-1) * dt + (.5) * dt * (dx''(i) - dx''(i-1))
 				//dy'_i = dy''_(i-1) * dt + (.5) * dt * (dy''(i) - dy''(i-1))
-				//dz'_i = dz''_(i-1) * dt + (.5) * dt * (dz''(i) - dz''(i-1))
+
 				dt = t.get(i+1) - t.get(i);
 				dx_veloc.add(  x_accel.get(i) * dt + (.5f) * dt * (x_accel.get(i+1) - x_accel.get(i)));
 				dy_veloc.add(  y_accel.get(i) * dt + (.5f) * dt * (y_accel.get(i+1) - y_accel.get(i)));
-				dz_veloc.add(  z_accel.get(i) * dt + (.5f) * dt * (z_accel.get(i+1) - z_accel.get(i)));
 			
-				System.out.println("Step: " + i + "\ndt: " + dt + "\n\tv_x:"+ dx_veloc.get(i) + "\n\tv_y: " + dy_veloc.get(i) + "\n\tv_z: " + dz_veloc.get(i));
+				System.out.println("Step: " + i + "\ndt: " + dt + "\n\tv_x:"+ dx_veloc.get(i) + "\n\tv_y: " + dy_veloc.get(i));
 			}
 			
 			//Sum up all delta values
@@ -208,20 +183,11 @@ public class PhysicsManager {
 					y_veloc.add(temp);
 				}
 			
-			temp = 0;
-			for(float d : dz_veloc)
-				{
-					temp += d;
-					z_veloc.add(temp);
-				} 
-			
 			ArrayList<Float> dx_disp = new ArrayList<Float>();
 			ArrayList<Float> dy_disp = new ArrayList<Float>();
-			ArrayList<Float> dz_disp = new ArrayList<Float>();
 			
 			ArrayList<Float> x_disp = new ArrayList<Float>(); x_disp.add(0f);
 			ArrayList<Float> y_disp = new ArrayList<Float>(); y_disp.add(0f);
-			ArrayList<Float> z_disp = new ArrayList<Float>(); z_disp.add(0f);
 			
 			//compose displacement
 			STEPS = x_veloc.size();
@@ -229,14 +195,12 @@ public class PhysicsManager {
 			for( int i = 0; i < STEPS-1; i++ )
 			{	
 				//dx_i = dx'_(i-1) * dt + (.5) * dt * (dx'(i) - dx'(i-1))
-				//dx_i = dx'_(i-1) * dt + (.5) * dt * (dx'(i) - dx'(i-1))
-				//dx_i = dx'_(i-1) * dt + (.5) * dt * (dx'(i) - dx'(i-1))
+				//dy_i = dx'_(i-1) * dt + (.5) * dt * (dy'(i) - dy'(i-1))
 				dt = t.get(i+1) - t.get(i);
 				dx_disp.add( x_veloc.get(i) * dt + (.5f) * dt * (x_veloc.get(i+1) - x_veloc.get(i)));
 				dy_disp.add( y_veloc.get(i) * dt + (.5f) * dt * (y_veloc.get(i+1) - y_veloc.get(i)));
-				dz_disp.add( z_veloc.get(i) * dt + (.5f) * dt * (z_veloc.get(i+1) - z_veloc.get(i)));
 				
-				System.out.println("Step: " + i + "\ndt: " + dt + "\n\td_x:"+ dx_disp.get(i) + "\n\td_y: " + dy_disp.get(i) + "\n\td_z: " + dz_disp.get(i));
+				System.out.println("Step: " + i + "\ndt: " + dt + "\n\td_x:"+ dx_disp.get(i) + "\n\td_y: " + dy_disp.get(i) );
 			}
 			
 
@@ -247,21 +211,19 @@ public class PhysicsManager {
 			{
 				//vector addition, constructing R
 				System.out.println("Composing R...\n");
-				float r[] = new float[3]; //[x, y, z]
+				float r[] = new float[2]; //[x, y]
 				for( int i = 0; i < STEPS-1; i++)
 				{
 					r[0] += dx_disp.get(i);
 					r[1] += dy_disp.get(i);
-					r[2] += dz_disp.get(i);
-					System.out.println("Step: " + i + "\n\tr_x: "+ r[0] + "\n\tr_y: " + r[1] + "\n\tr_z: " + r[2]);
+					System.out.println("Step: " + i + "\n\tr_x: "+ r[0] + "\n\tr_y: " + r[1]);
 				}
 			
 				//Distance formula, constructing D
-				//D = sqrt(X^2 + Y^2 + Z^2)
+				//D = sqrt(X^2 + Y^2 )
 				distance =  FloatMath.sqrt( 
 								(float)Math.pow(r[0], 2) + 
-								(float)Math.pow(r[1], 2) +
-								(float)Math.pow(r[2], 2)
+								(float)Math.pow(r[1], 2) 
 								);
 				return distance;
 			}
@@ -271,11 +233,10 @@ public class PhysicsManager {
 				//sum up individual distances, constructing D
 				for( int i = 0; i < STEPS-1; i++)
 				{
-					//dD = sqrt( dx^2 + dy^2 + dz^2 )
+					//dD = sqrt( dx^2 + dy^2 )
 					distance += Math.sqrt(
 									Math.pow(dx_disp.get(i), 2) +
-									Math.pow(dy_disp.get(i), 2) +
-									Math.pow(dz_disp.get(i), 2)
+									Math.pow(dy_disp.get(i), 2)
 									);
 				}		
 				return distance;
@@ -286,7 +247,6 @@ public class PhysicsManager {
 	
 		public float Simpsons (	ArrayList<Float> x_accel, 
 								ArrayList<Float> y_accel, 
-								ArrayList<Float> z_accel,
 								ArrayList<Float> t)
 		{
 			
@@ -296,11 +256,9 @@ public class PhysicsManager {
 			
 			ArrayList<Float> dx_veloc = new ArrayList<Float>(); 
 			ArrayList<Float> dy_veloc = new ArrayList<Float>();
-			ArrayList<Float> dz_veloc = new ArrayList<Float>();
 			
 			ArrayList<Float> x_veloc = new ArrayList<Float>(); x_veloc.add(0f);
 			ArrayList<Float> y_veloc = new ArrayList<Float>(); y_veloc.add(0f);
-			ArrayList<Float> z_veloc = new ArrayList<Float>(); z_veloc.add(0f);
 			
 			//compose velocity
 			int STEPS = x_accel.size();
@@ -310,7 +268,6 @@ public class PhysicsManager {
 			
 					k1_x, k2_x, k3_x,
 					k1_y, k2_y, k3_y,
-					k1_z, k2_z, k3_z,
 			
 					dv_x, dv_y, dv_z
 					;
@@ -333,32 +290,26 @@ public class PhysicsManager {
 				//Left_Eulers_Increment
 				k1_x = x_accel.get(i) * dt;
 				k1_y = y_accel.get(i) * dt;
-				k1_z = z_accel.get(i) * dt;
 				
 				//Midpoint_Increment
 				k2_x = (x_accel.get(i) + x_accel.get(i+1)) / 2  * dt ;
 				k2_y = (y_accel.get(i) + y_accel.get(i+1)) / 2  * dt ;
-				k2_z = (z_accel.get(i) + z_accel.get(i+1)) / 2  * dt ;
 				
 				//Right_Eulers_Increment
 				k3_x = x_accel.get(i+1) * dt;
 				k3_y = y_accel.get(i+1) * dt;
-				k3_z = z_accel.get(i+1) * dt;
 				
 				dv_x = (1f/6f) * (k1_x + 4 * k2_x + k3_x );
 				dv_y = (1f/6f) * (k1_y + 4 * k2_y + k3_y );
-				dv_z = (1f/6f) * (k1_z + 4 * k3_z + k3_z );
 						
 				dx_veloc.add(  dv_x );
 				dy_veloc.add(  dv_y );
-				dz_veloc.add(  dv_z);
 				
 				
 				System.out.println("Step: " + i
 									+ "\ndt: " + dt
 									+ "\n\tv_x:"+ dx_veloc.get(i)
 									+ "\n\tv_y: " + dy_veloc.get(i)
-									+ "\n\tv_z: " + dz_veloc.get(i)
 									);
 			}
 			float temp = 0f;
@@ -375,16 +326,8 @@ public class PhysicsManager {
 					y_veloc.add(temp);
 				}
 			
-			temp = 0;
-			for(float d : dz_veloc)
-			{
-				temp += d;
-				z_veloc.add(temp);
-			}
-			
 			ArrayList<Float> dx_disp = new ArrayList<Float>(); 
 			ArrayList<Float> dy_disp = new ArrayList<Float>();
-			ArrayList<Float> dz_disp = new ArrayList<Float>();
 			
 			System.out.println("Composing Displacement from Velocity...\n");
 			STEPS = x_veloc.size();
@@ -407,32 +350,26 @@ public class PhysicsManager {
 				//Left_Eulers_Increment
 				k1_x = x_veloc.get(i) * dt;
 				k1_y = y_veloc.get(i) * dt;
-				k1_z = z_veloc.get(i) * dt;
 				
 				//Midpoint_Increment
 				k2_x = (x_veloc.get(i) + x_veloc.get(i+1)) / 2  * dt ;
 				k2_y = (y_veloc.get(i) + y_veloc.get(i+1)) / 2  * dt ;
-				k2_z = (z_veloc.get(i) + z_veloc.get(i+1)) / 2  * dt ;
 				
 				//Right_Eulers_Increment
 				k3_x = x_veloc.get(i+1) * dt;
 				k3_y = y_veloc.get(i+1) * dt;
-				k3_z = z_veloc.get(i+1) * dt;
 				
 				dD_x = (1f/6f) * (k1_x + 4 * k2_x + k3_x );
 				dD_y = (1f/6f) * (k1_y + 4 * k2_y + k3_y );
-				dD_z = (1f/6f) * (k1_z + 4 * k3_z + k3_z );
 						
 				dx_disp.add(  dD_x );
 				dy_disp.add(  dD_y );
-				dz_disp.add(  dD_z);
 				
 				
 				System.out.println("Step: " + i 
 									+ "\ndt: " + dt
 									+ "\n\td_x:"+ dx_disp.get(i)
 									+ "\n\td_y: " + dy_disp.get(i)
-									+ "\n\td_z: " + dz_disp.get(i)
 									);
 			}	
 			
@@ -443,20 +380,18 @@ public class PhysicsManager {
 			{
 				//vector addition, constructing R
 				System.out.println("Composing R...\n");
-				float r[] = new float[3]; //[x, y, z]
+				float r[] = new float[2]; //[x, y]
 				for( int i = 0; i < STEPS; i++)
 				{
 					r[0] += dx_disp.get(i);
 					r[1] += dy_disp.get(i);
-					r[2] += dz_disp.get(i);
 				}
 			
 				//Distance formula, constructing D
 				//D = sqrt(X^2 + Y^2 + Z^2)
 				distance =  FloatMath.sqrt( 
 								(float)Math.pow(r[0], 2) + 
-								(float)Math.pow(r[1], 2) //+
-								//(float)Math.pow(r[2], 2)
+								(float)Math.pow(r[1], 2) 
 								);
 				return distance;
 			}
@@ -469,8 +404,7 @@ public class PhysicsManager {
 					//dD = sqrt( dx^2 + dy^2 + dz^2 )
 					distance += Math.sqrt(
 									Math.pow(dx_disp.get(i), 2) +
-									Math.pow(dy_disp.get(i), 2) +
-									Math.pow(dz_disp.get(i), 2)
+									Math.pow(dy_disp.get(i), 2)
 									);
 				}		
 				return distance;
@@ -483,6 +417,7 @@ public class PhysicsManager {
 											ArrayList<Float> zData
 											)
 		{
+			//Very basic. Simply subtracts calibrated gravity from all measurements
 			
 			System.out.println("Entering RemoveGravity");
 				
