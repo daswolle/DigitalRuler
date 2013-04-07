@@ -71,7 +71,7 @@ public class Calibrate extends Activity implements SensorEventListener, Runnable
 		}
 		
 		mSensorManager.unregisterListener(this, mAccelerometer);
-		//mSensorManager.unregisterListener(this, mOrientation);
+		measurements.unravel();
 		ArrayList<Float> xData = measurements.xData;
 		ArrayList<Float> yData = measurements.yData;
 		
@@ -106,7 +106,6 @@ public class Calibrate extends Activity implements SensorEventListener, Runnable
 			System.out.println("Calibrate: Accel Sensor changed");
 			float x = event.values[0]; 
 			float y = event.values[1];
-			float z = event.values[2];
 			long t = event.timestamp; 
 			measurements.add(x, y, t); //record values.
 	}

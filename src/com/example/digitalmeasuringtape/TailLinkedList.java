@@ -63,10 +63,6 @@ public class TailLinkedList {
   private class Node {
   	public float x;
   	public float y;
-  	public float z;
-  	public float ox;
-  	public float oy;
-  	public float oz;
   	
   	public long time;
   	public Node next;

@@ -17,7 +17,6 @@ public class PhysicsManager {
 			settings = main.sPrefs;
 		}
 		
-	@SuppressWarnings("unused")
 	
 		public float Distance(	ArrayList<Float> x_accel, 
 								ArrayList<Float> y_accel,
@@ -25,8 +24,8 @@ public class PhysicsManager {
 		{
 			float distance;
 			//distance = Eulers(x_accel, y_accel, t);
-			//distance = Improved_Eulers(x_accel, y_accel, t);
-			distance = Simpsons(x_accel, y_accel, t);
+			distance = Improved_Eulers(x_accel, y_accel, t);
+			//distance = Simpsons(x_accel, y_accel, t);
 			System.out.println("Just calculated distance of: " + distance);
 			System.out.println("x: "+x_accel);
 			System.out.println("y: "+y_accel);
