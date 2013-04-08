@@ -113,6 +113,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	protected void onStop(){
 		super.onStop();
 		onDestroy();
+//		TODO dialog.dismiss();
 	}
 	
 	private OnTouchListener myListener = new OnTouchListener(){
