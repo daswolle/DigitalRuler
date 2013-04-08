@@ -71,34 +71,28 @@ public class Calibrate extends Activity implements SensorEventListener, Runnable
 		}
 		
 		mSensorManager.unregisterListener(this, mAccelerometer);
-		//mSensorManager.unregisterListener(this, mOrientation);
+		measurements.unravel();
 		ArrayList<Float> xData = measurements.xData;
 		ArrayList<Float> yData = measurements.yData;
-		ArrayList<Float> zData = measurements.zData;
 		
-		float xAvg = 0, yAvg = 0, zAvg = 0;
+		float xAvg = 0, yAvg = 0;
 		
 		for(int i = 0; i < xData.size(); i ++)
 		{
 			xAvg += xData.get(i);
 			yAvg += yData.get(i);
-			zAvg += zData.get(i);
 		}
 		
 		xAvg /= xData.size();
 		yAvg /= yData.size();
-		zAvg /= zData.size();
 		
 		System.out.println("Gravity_x: " + xAvg);
+		System.out.println("Gravity_y: " + yAvg);
 		
 		SharedPreferences.Editor editor = sPrefs.edit();
 		editor.putFloat("Gravity_x", xAvg);
-		editor.putFloat("Gravity_y", yAvg);
-		editor.putFloat("Gravity_z", zAvg);		
+		editor.putFloat("Gravity_y", yAvg);		
 		editor.commit();
-		
-		float exval = sPrefs.getFloat("Gravity_x", -1);
-		System.out.println("exval: " + exval);
 	}
 
 	@Override
@@ -109,25 +103,11 @@ public class Calibrate extends Activity implements SensorEventListener, Runnable
 
 	@Override
 	public void onSensorChanged(SensorEvent event) {
-		//if (event.accuracy == SensorManager.SENSOR_STATUS_UNRELIABLE)
-		//return;
-	
-		switch(event.sensor.getType())
-		{
-		case Sensor.TYPE_ACCELEROMETER :
-			System.out.println("Accel Sensor changed");
+			System.out.println("Calibrate: Accel Sensor changed");
 			float x = event.values[0]; 
 			float y = event.values[1];
-			float z = event.values[2];
 			long t = event.timestamp; 
-			pi_string = "x = " + x + "\ny = " + y + "\nz = " + z;
-			System.out.println(pi_string);
-	//		handler.sendEmptyMessage(0);
-			
-			//TODO: Calibrate must now include orientation business to function correctly 
-			measurements.add(x, y, z, 0f,0f,0f, t); //record values.
-			break;
-		}
+			measurements.add(x, y, t); //record values.
 	}
 
 	@Override

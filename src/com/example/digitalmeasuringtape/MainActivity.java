@@ -1,12 +1,11 @@
 package com.example.digitalmeasuringtape;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -29,18 +28,14 @@ import android.widget.TextView;
 
 public class MainActivity extends Activity implements Runnable, SensorEventListener{
 
-	private String pi_string;
-	private TextView tv;
-	private ProgressDialog pd;
+	private static String pi_string;
+	private static TextView tv;
 	private boolean activeThread = true;
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer;
-	private Sensor mOrientation;
 	private PhysicsManager physics;
 	public SharedPreferences sPrefs;
 	public TailLinkedList measurements;
-	public float[] lastOrientation;
-	public float firstOZ; //every time "collect" is called, reset this to -1
 	public CountDownLatch gate; //things call gate.await(), and get blocked.
 								//things become unblocked when gate.countDown()
 								//is called enough times, which will be 1
@@ -66,7 +61,6 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		//setting up sensor managers
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-		mOrientation = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
 		
 		//hookup button
 		Button button = (Button)findViewById(R.id.button1);
@@ -183,16 +177,11 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		measurements.unravel();
 		
 		physics.RemoveGravity(	measurements.xData, 
-								measurements.yData, 
-								measurements.zData, 
-								measurements.oxData, 
-								measurements.oyData, 
-								measurements.ozData
+								measurements.yData
 								);
 		
 		double d = physics.Distance(measurements.xData, 
 									measurements.yData,
-									measurements.zData,
 									measurements.tData);
 		
 		//d.toString(), then truncate to two decimal places
@@ -242,14 +231,11 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		System.out.println("Calling Collect()");
 		
 		measurements = new TailLinkedList();
-		lastOrientation = new float[3]; lastOrientation[0] = -1f; lastOrientation[1] = -1f; lastOrientation[2] = -1f;
-		firstOZ = -1; 
 		gate = new CountDownLatch(1);
 		
 		boolean worked = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);	
-		boolean worked2 = mSensorManager.registerListener(this, mOrientation, SensorManager.SENSOR_DELAY_FASTEST);	
 		
-		System.out.println("Return from registerlistener: " + worked  + " and " + worked2);
+		System.out.println("Return from registerlistener: " + worked );
 		List<Sensor> l = mSensorManager.getSensorList(Sensor.TYPE_ALL);
 		for(Sensor s : l)
 			System.out.println(s.getName());
@@ -257,13 +243,11 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		try {
 			gate.await();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
 		//stop measuring
 		mSensorManager.unregisterListener(this, mAccelerometer);
-		mSensorManager.unregisterListener(this, mOrientation);
 		
 		System.out.println("returning from Collect()");
 		}
@@ -279,7 +263,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
             // forcing the loop from the Thread to end
             activeThread = false;
             if(gate!=null)
-            	gate.countDown(); 	//causes the thread's "run" method to contine.
+            	gate.countDown(); 	//causes the thread's "run" method to continue.
             						//"opens the gate"
         }
         
@@ -301,7 +285,8 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
     }
 	
 	//Receive thread messages, interpret them and act as needed
-	private Handler handler = new Handler(){
+	@SuppressLint("HandlerLeak")
+	private static Handler handler = new Handler(){
 		@Override
 		public void handleMessage(Message mg){
 			//pd.dismiss();
@@ -310,39 +295,14 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	};
 	
 	public void onSensorChanged(SensorEvent event) {
-		//if (event.accuracy == SensorManager.SENSOR_STATUS_UNRELIABLE)
-			//return;
-		
-		switch(event.sensor.getType())
-		{
-		case Sensor.TYPE_ACCELEROMETER :
-			if(lastOrientation[0] == -1f && lastOrientation[1] == -1f && lastOrientation[2] == -1f) {
-				break;
-			}
-			float x = event.values[0]; 
-			float y = event.values[1];
-			float z = event.values[2];
-			long t = event.timestamp; 
-//			pi_string = "x = " + x + "\ny = " + y + "\nz = " + z;
-			pi_string = "collecting";
-			handler.sendEmptyMessage(0);
-			measurements.add(x, y, z, lastOrientation[1], lastOrientation[2], lastOrientation[0] - firstOZ, t); //record values.
-			break;
-		case Sensor.TYPE_ORIENTATION :
-			if(firstOZ == -1){
-				firstOZ = event.values[0];
-			}
-			System.out.println("Orientation Sensor Changed");
-			lastOrientation[0] = event.values[0]; //oz
-			lastOrientation[1] = event.values[1]; //ox
-			lastOrientation[2] = event.values[2]; //oy
-			long time = event.timestamp;
-			//pi_string = "Azimuth¡ = " + lastOrientation[0] + "\nPitch¡ = " + lastOrientation[1] + "\nYaw¡ = " + lastOrientation[2];
-			//System.out.println(pi_string);
-			//handler.sendEmptyMessage(0);
-			break;
+		System.out.println("Measure: Accel Sensor Changed");
+		float x = event.values[0]; 
+		float y = event.values[1];
+		long t = event.timestamp;
+		pi_string = "collecting";
+		handler.sendEmptyMessage(0);
+		measurements.add(x, y, t); //record values.
 			
-		}
 	}
 	
 	@Override
