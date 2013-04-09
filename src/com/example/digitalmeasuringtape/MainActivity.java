@@ -1,5 +1,9 @@
 package com.example.digitalmeasuringtape;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -15,6 +19,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
@@ -176,9 +181,23 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		
 		measurements.unravel();
 		
-		physics.RemoveGravity(	measurements.xData, 
-								measurements.yData
-								);
+//saving data		
+		String xString = measurements.listToString(measurements.xData, "x");
+		String yString = measurements.listToString(measurements.yData, "y");
+		String tString = measurements.listToString(measurements.tData, "t");
+		measurements.writeGraph("graphs.csv", xString, yString, tString);
+		
+		//TRIPLE SMOOTH
+		ArrayList<Float> xSmooth = measurements.smooth(measurements.xData);
+		ArrayList<Float> xSoSmooth = measurements.smooth(xSmooth);
+		ArrayList<Float> xSoSoSmooth = measurements.smooth(xSoSmooth);
+		String xSmoothString = measurements.listToString(xSoSoSmooth, "xS");
+		measurements.writeGraph("x_smooth.csv", xString, xSmoothString, tString);
+//end saving data
+		
+//		physics.RemoveGravity(	measurements.xData, 
+//								measurements.yData
+//								);
 		
 		double d = physics.Distance(measurements.xData, 
 									measurements.yData,

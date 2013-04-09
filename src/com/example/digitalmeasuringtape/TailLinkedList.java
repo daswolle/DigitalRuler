@@ -1,6 +1,11 @@
 package com.example.digitalmeasuringtape;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
+
+import android.os.Environment;
 
 public class TailLinkedList {
   private Node head;
@@ -59,6 +64,83 @@ public class TailLinkedList {
 	  }
 	  return;
   }
+  
+  public ArrayList<Float> smooth(ArrayList<Float> input){
+	  //implementation of basic moving average; m = 1
+	  ArrayList<Float> sData = new ArrayList<Float>();
+	  float p;
+	  float c;
+	  float n;
+	  float avg;
+	  
+	  int STEPS = input.size();
+	  for(int i = 1; i < STEPS-2; i++)
+	  {
+		  p = input.get(i-1);
+		  c = input.get(i);
+		  n = input.get(i+1);
+		 avg = (p + c + n)/3;  
+		  sData.add(avg);
+	  }
+	 
+	  return sData;
+  }
+  
+	public String listToString(ArrayList<Float> data, String c)
+	{
+		String x = c + ", ";
+		
+		for (Float s : data)
+		{
+			x += s + ", ";
+		}
+		
+		return x;
+	}
+	
+	public void writeGraph(String sFileName, String xData, String yData, String tData)
+	{
+		boolean mExternalStorageAvailable = false;
+		boolean mExternalStorageWriteable = false;
+		String state = Environment.getExternalStorageState();
+
+		if (Environment.MEDIA_MOUNTED.equals(state)) {
+		    // We can read and write the media
+		    mExternalStorageAvailable = mExternalStorageWriteable = true;
+		} else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+		    // We can only read the media
+		    mExternalStorageAvailable = true;
+		    mExternalStorageWriteable = false;
+		} else {
+		    // Something else is wrong. It may be one of many other states, but all we need
+		    //  to know is we can neither read nor write
+		    mExternalStorageAvailable = mExternalStorageWriteable = false;
+		}
+		
+		if (mExternalStorageAvailable && mExternalStorageWriteable)
+		{
+			try
+			{
+				File x = new File(Environment.getExternalStorageDirectory(), "mTape");
+				if (!x.exists())
+				{
+					x.mkdirs();
+				}
+				
+				File y = new File(x, sFileName);
+				FileWriter writer = new FileWriter(y);
+				writer.append(xData + "\n" + yData + "\n" + tData);
+				writer.flush();
+				writer.close();
+			}
+			catch(IOException e)
+			{
+				e.printStackTrace();
+			}
+		} else {
+			System.out.println("can't write file");
+		}
+	}
   
   private class Node {
   	public float x;
