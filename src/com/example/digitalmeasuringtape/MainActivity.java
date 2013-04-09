@@ -1,8 +1,5 @@
 package com.example.digitalmeasuringtape;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -19,7 +16,6 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
@@ -70,6 +66,21 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		//hookup button
 		Button button = (Button)findViewById(R.id.button1);
 		button.setOnTouchListener(myListener);
+		
+		//-----TODO: these should be settable in settings
+		SharedPreferences.Editor editor = sPrefs.edit();
+		editor.putBoolean("MeasureX", true);
+		editor.putBoolean("MeasureY", false);
+		editor.putBoolean("MeasureZ", false);
+		
+		editor.putBoolean("Eulers", false);
+		editor.putBoolean("ImprovedEulers", false);
+		editor.putBoolean("Simpsons", true);
+		
+		editor.putBoolean("PathMode", false);
+		editor.commit();
+		//-----
+		
 		
 		//check if calibrated
 		iCalibrate();
@@ -170,6 +181,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		Measure();
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void Measure(){
 		
 		System.out.println("Calling Measure");
@@ -181,7 +193,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		
 		measurements.unravel();
 		
-//saving data		
+		//saving data		
 		String xString = measurements.listToString(measurements.xData, "x");
 		String yString = measurements.listToString(measurements.yData, "y");
 		String tString = measurements.listToString(measurements.tData, "t");
@@ -193,15 +205,33 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		ArrayList<Float> xSoSoSmooth = measurements.smooth(xSoSmooth);
 		String xSmoothString = measurements.listToString(xSoSoSmooth, "xS");
 		measurements.writeGraph("x_smooth.csv", xString, xSmoothString, tString);
-//end saving data
+		//end saving data
 		
-//		physics.RemoveGravity(	measurements.xData, 
-//								measurements.yData
-//								);
-		
-		double d = physics.Distance(measurements.xData, 
+		double d;
+		if (!sPrefs.getBoolean("MeasureY",false))
+		{
+			physics.RemoveGravity(	measurements.xData );
+			 d = physics.Distance(	measurements.xData,
+					 				measurements.tData);
+		}
+		else if(!sPrefs.getBoolean("MeasureZ", false))
+		{
+			physics.RemoveGravity(	measurements.xData,
+									measurements.yData);
+			 d = physics.Distance(	measurements.xData,
+					 				measurements.yData,
+					 				measurements.tData);
+		}
+		else
+		{
+			physics.RemoveGravity(	measurements.xData,
 									measurements.yData,
-									measurements.tData);
+									measurements.zData);
+			 d = physics.Distance(	measurements.xData,
+					 				measurements.yData,
+					 				measurements.zData,
+					 				measurements.tData);
+		}
 		
 		//d.toString(), then truncate to two decimal places
 		String truncate;
@@ -315,12 +345,21 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	
 	public void onSensorChanged(SensorEvent event) {
 		System.out.println("Measure: Accel Sensor Changed");
-		float x = event.values[0]; 
-		float y = event.values[1];
+		float x=0;
+		float y=0;
+		float z=0;
+		
+		x = event.values[0]; 
+		if (sPrefs.getBoolean("MeasureY", false)) y = event.values[1];
+		if (sPrefs.getBoolean("MeasureZ", false)) z = event.values[2];
 		long t = event.timestamp;
 		pi_string = "collecting";
 		handler.sendEmptyMessage(0);
-		measurements.add(x, y, t); //record values.
+		
+		if (!sPrefs.getBoolean("MeasureY", false)) measurements.add(t, x);
+			else if (!sPrefs.getBoolean("MeasureZ", false)) measurements.add(t, x, y);
+			else measurements.add(t, x, y, z);
+
 			
 	}
 	

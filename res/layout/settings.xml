@@ -42,4 +42,24 @@
             android:summary="returns minimum time data for a sensor to return data" 
             android:onClick="calibrate_sensor"/> -->
     </PreferenceCategory>
+    <PreferenceCategory
+        android:title="Measurement Axis">
+        <Preference
+        android:title="Axis" 
+        android:enabled="false"
+        android:selectable="false"
+        android:summary="By default, the X axis is used for measuring. You can choose to add other axis below." />
+        <CheckBoxPreference
+            android:key="MeasureY"
+            android:title="Measure Y Axis"
+            android:summary="Do you want to meausre in the Y axis?"
+            android:defaultValue="false"
+            />
+        <CheckBoxPreference
+            android:key="MeasureZ"
+            android:title="Measure Z Axis"
+            android:summary="Do you want to meausre in the Z axis?"
+            android:defaultValue="false"
+            />
+    </PreferenceCategory>
 </PreferenceScreen>
