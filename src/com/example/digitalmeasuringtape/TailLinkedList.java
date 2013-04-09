@@ -7,6 +7,7 @@ public class TailLinkedList {
   private Node tail;
   public ArrayList<Float> xData;
   public ArrayList<Float> yData;
+  public ArrayList<Float> zData;
   public ArrayList<Float> tData;
 
   public TailLinkedList() {
@@ -14,6 +15,7 @@ public class TailLinkedList {
 	  tail = null;
 	  xData = new ArrayList<Float>();
 	  yData = new ArrayList<Float>();
+	  zData = new ArrayList<Float>();
 	  tData = new ArrayList<Float>();
   }
 
@@ -22,11 +24,12 @@ public class TailLinkedList {
 	  tail = firstNode;
 	  xData = new ArrayList<Float>();
 	  yData = new ArrayList<Float>();
+	  zData = new ArrayList<Float>();
 	  tData = new ArrayList<Float>();
   }
 
-  public void add(float x, float y, long time) {
-   Node newNode = new Node(x, y, time);
+  public void add(long time, float ... args) {
+   Node newNode = new Node(time, args);
    if(head==null && tail == null)
    {
 	   //then this is the first node inserted ever
@@ -52,6 +55,7 @@ public class TailLinkedList {
 	  while(trav.next != null) {
 		  xData.add(trav.x);
 		  yData.add(trav.y);
+		  zData.add(trav.z);
 		  t = trav.time - t0;
 		  t /= 1000000000.0;
 		  tData.add((float)t);
@@ -63,13 +67,15 @@ public class TailLinkedList {
   private class Node {
   	public float x;
   	public float y;
+  	public float z;
   	
   	public long time;
   	public Node next;
 
- 	 public Node(float newX, float newY, long newTime) {
-   		x = newX;
-   		y = newY;
+ 	 public Node(long newTime, float ... args) {
+   		x = args[0];
+   		if(args.length >=2) y = args[1];
+   		if(args.length >=3) z = args[2];
 	   time = newTime;
 	   next = null;
 	  }

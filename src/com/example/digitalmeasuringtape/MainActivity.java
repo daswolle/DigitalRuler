@@ -66,6 +66,21 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		Button button = (Button)findViewById(R.id.button1);
 		button.setOnTouchListener(myListener);
 		
+		//-----TODO: these should be settable in settings
+		SharedPreferences.Editor editor = sPrefs.edit();
+		editor.putBoolean("MeasureX", true);
+		editor.putBoolean("MeasureY", false);
+		editor.putBoolean("MeasureZ", false);
+		
+		editor.putBoolean("Eulers", false);
+		editor.putBoolean("ImprovedEulers", false);
+		editor.putBoolean("Simpsons", true);
+		
+		editor.putBoolean("PathMode", false);
+		editor.commit();
+		//-----
+		
+		
 		//check if calibrated
 		iCalibrate();
 	}
@@ -175,14 +190,31 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		handler.sendEmptyMessage(0);
 		
 		measurements.unravel();
-		
-		physics.RemoveGravity(	measurements.xData, 
-								measurements.yData
-								);
-		
-		double d = physics.Distance(measurements.xData, 
+		double d;
+		if (!sPrefs.getBoolean("MeasureY",false))
+		{
+			physics.RemoveGravity(	measurements.xData );
+			 d = physics.Distance(	measurements.xData,
+					 				measurements.tData);
+		}
+		else if(!sPrefs.getBoolean("MeasureZ", false))
+		{
+			physics.RemoveGravity(	measurements.xData,
+									measurements.yData);
+			 d = physics.Distance(	measurements.xData,
+					 				measurements.yData,
+					 				measurements.tData);
+		}
+		else
+		{
+			physics.RemoveGravity(	measurements.xData,
 									measurements.yData,
-									measurements.tData);
+									measurements.zData);
+			 d = physics.Distance(	measurements.xData,
+					 				measurements.yData,
+					 				measurements.zData,
+					 				measurements.tData);
+		}
 		
 		//d.toString(), then truncate to two decimal places
 		String truncate;
@@ -296,12 +328,21 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	
 	public void onSensorChanged(SensorEvent event) {
 		System.out.println("Measure: Accel Sensor Changed");
-		float x = event.values[0]; 
-		float y = event.values[1];
+		float x=0;
+		float y=0;
+		float z=0;
+		
+		x = event.values[0]; 
+		if (sPrefs.getBoolean("MeasureY", false)) y = event.values[1];
+		if (sPrefs.getBoolean("MeasureZ", false)) z = event.values[2];
 		long t = event.timestamp;
 		pi_string = "collecting";
 		handler.sendEmptyMessage(0);
-		measurements.add(x, y, t); //record values.
+		
+		if (!sPrefs.getBoolean("MeasureY", false)) measurements.add(t, x);
+			else if (!sPrefs.getBoolean("MeasureZ", false)) measurements.add(t, x, y);
+			else measurements.add(t, x, y, z);
+
 			
 	}
 	

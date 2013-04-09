@@ -74,24 +74,29 @@ public class Calibrate extends Activity implements SensorEventListener, Runnable
 		measurements.unravel();
 		ArrayList<Float> xData = measurements.xData;
 		ArrayList<Float> yData = measurements.yData;
+		ArrayList<Float> zData = measurements.zData;
 		
-		float xAvg = 0, yAvg = 0;
+		float xAvg = 0, yAvg = 0, zAvg = 0;
 		
 		for(int i = 0; i < xData.size(); i ++)
 		{
 			xAvg += xData.get(i);
 			yAvg += yData.get(i);
+			zAvg += zData.get(i);
 		}
 		
 		xAvg /= xData.size();
 		yAvg /= yData.size();
+		zAvg /= zData.size();
 		
 		System.out.println("Gravity_x: " + xAvg);
 		System.out.println("Gravity_y: " + yAvg);
+		System.out.println("Gravity_z: " + zAvg);
 		
 		SharedPreferences.Editor editor = sPrefs.edit();
 		editor.putFloat("Gravity_x", xAvg);
-		editor.putFloat("Gravity_y", yAvg);		
+		editor.putFloat("Gravity_y", yAvg);	
+		editor.putFloat("Gravity_z", zAvg);		
 		editor.commit();
 	}
 
@@ -104,11 +109,25 @@ public class Calibrate extends Activity implements SensorEventListener, Runnable
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 			System.out.println("Calibrate: Accel Sensor changed");
-			float x = event.values[0]; 
-			float y = event.values[1];
+			float x=0;
+			float y=0;
+			float z=0;
+			
+			x = event.values[0]; 
+			if (sPrefs.getBoolean("MeasureY", false)) y = event.values[1];
+			if (sPrefs.getBoolean("MeasureZ", false)) z = event.values[2];
 			long t = event.timestamp; 
-			measurements.add(x, y, t); //record values.
+			
+			if (!sPrefs.getBoolean("MeasureY", false)) measurements.add(t, x);
+			else if (!sPrefs.getBoolean("MeasureZ", false)) measurements.add(t, x, y);
+			else measurements.add(t, x, y, z);
 	}
+	
+	
+	
+
+
+		
 
 	@Override
     public void run()
