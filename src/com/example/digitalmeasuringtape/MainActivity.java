@@ -33,10 +33,11 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	private static TextView tv;
 	private boolean activeThread = true;
 	private SensorManager mSensorManager;
-	private Sensor mAccelerometer;
+	private Sensor mAccelerometer, mOrientation;
 	private PhysicsManager physics;
 	public SharedPreferences sPrefs;
 	public TailLinkedList measurements;
+	public float greatestX, greatestY, greatestZ, lastAzimuth, firstAzimuth;
 	public CountDownLatch gate; //things call gate.await(), and get blocked.
 								//things become unblocked when gate.countDown()
 								//is called enough times, which will be 1
@@ -62,6 +63,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		//setting up sensor managers
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+		mOrientation = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
 		
 		//hookup button
 		Button button = (Button)findViewById(R.id.button1);
@@ -193,6 +195,9 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		
 		measurements.unravel();
 		
+		//correcting for if phone rotated about Z at any point
+		physics.Straighten(measurements.xData, measurements.azimuthData);
+		
 		//saving data		
 		String xString = measurements.listToString(measurements.xData, "x");
 		String yString = measurements.listToString(measurements.yData, "y");
@@ -280,11 +285,14 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		System.out.println("Calling Collect()");
 		
 		measurements = new TailLinkedList();
+		firstAzimuth = -1f;
+		lastAzimuth = -1f;
 		gate = new CountDownLatch(1);
 		
 		boolean worked = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);	
+		boolean worked2 = mSensorManager.registerListener(this, mOrientation, SensorManager.SENSOR_DELAY_FASTEST);
 		
-		System.out.println("Return from registerlistener: " + worked );
+		System.out.println("Return from registerlistener: " + worked + " and " + worked2 );
 		List<Sensor> l = mSensorManager.getSensorList(Sensor.TYPE_ALL);
 		for(Sensor s : l)
 			System.out.println(s.getName());
@@ -297,6 +305,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		
 		//stop measuring
 		mSensorManager.unregisterListener(this, mAccelerometer);
+		mSensorManager.unregisterListener(this, mOrientation);
 		
 		System.out.println("returning from Collect()");
 		}
@@ -344,22 +353,42 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	};
 	
 	public void onSensorChanged(SensorEvent event) {
-		System.out.println("Measure: Accel Sensor Changed");
-		float x=0;
-		float y=0;
-		float z=0;
 		
-		x = event.values[0]; 
-		if (sPrefs.getBoolean("MeasureY", false)) y = event.values[1];
-		if (sPrefs.getBoolean("MeasureZ", false)) z = event.values[2];
-		long t = event.timestamp;
-		pi_string = "collecting";
-		handler.sendEmptyMessage(0);
+		switch(event.sensor.getType())
+		{
+		case Sensor.TYPE_ACCELEROMETER:
+			if(lastAzimuth == -1f)
+				break;
+			System.out.println("Measure: Accel Sensor Changed");
+			float x=0;
+			float y=0;
+			float z=0;
+			long  t=0;
+			
+			t = event.timestamp;
+			x = event.values[0]; 
+			if (sPrefs.getBoolean("MeasureY", false)) y = event.values[1];
+			if (sPrefs.getBoolean("MeasureZ", false)) z = event.values[2];
+			
+			if(x > greatestX) greatestX = x;
+			if(y > greatestY) greatestY = y;
+			if(z > greatestZ) greatestZ = z;
+			
+			
+			pi_string = "collecting";
+			handler.sendEmptyMessage(0);
+			
+			if (!sPrefs.getBoolean("MeasureY", false)) measurements.add(t, lastAzimuth, x);
+				else if (!sPrefs.getBoolean("MeasureZ", false)) measurements.add(t, lastAzimuth, x, y);
+				else measurements.add(t, lastAzimuth, x, y, z);
+			break;
+		case Sensor.TYPE_ORIENTATION:
+			if(firstAzimuth == -1f) 
+				firstAzimuth = event.values[0] / 360f * (float)(2 * Math.PI);
+			lastAzimuth = event.values[0]/ 360f * (float)(2 * Math.PI) - firstAzimuth;
+			break;
 		
-		if (!sPrefs.getBoolean("MeasureY", false)) measurements.add(t, x);
-			else if (!sPrefs.getBoolean("MeasureZ", false)) measurements.add(t, x, y);
-			else measurements.add(t, x, y, z);
-
+		}
 			
 	}
 	
