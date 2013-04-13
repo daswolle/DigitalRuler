@@ -178,7 +178,7 @@ public class ProgressWheel extends View {
 		if(delayMillis<0) {
 			delayMillis = 0;
 		}
-	    
+	
 	    barColor = a.getColor(R.styleable.ProgressWheel_barColor, barColor);
 	    
 	    barLength = (int) a.getDimension(R.styleable.ProgressWheel_barLength,
@@ -189,8 +189,9 @@ public class ProgressWheel extends View {
 	    
 	    textColor = (int) a.getColor(R.styleable.ProgressWheel_textColor,
 	    	textColor);
-	    
-	    setText(a.getString(R.styleable.ProgressWheel_text));
+	
+	    setText("");
+//	    setText(a.getString(R.styleable.ProgressWheel_text));
 	    
 	    rimColor = (int) a.getColor(R.styleable.ProgressWheel_rimColor,
 	    	rimColor);
