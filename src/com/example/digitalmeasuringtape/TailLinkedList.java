@@ -35,6 +35,22 @@ public class TailLinkedList {
 	  azimuthData = new ArrayList<Float>();
 	  tData = new ArrayList<Float>();
   }
+  
+  public void trim(float Gx) {
+	  System.out.println("Trimming Linked List");
+	  Node trav = head;
+	  boolean firstTrim = true;
+	  while(head.next != null) {
+		  if(trav.x > 2 * Gx && firstTrim) {
+			  System.out.println("Trimmed at t = " + trav.time);
+			  firstTrim = false;
+			  head = trav;
+			  break;
+		  }
+		  trav = trav.next;
+	  }
+	  
+  }
 
   public void add(long time, float azimuth, float ... args) {
    Node newNode = new Node(time, azimuth, args);
