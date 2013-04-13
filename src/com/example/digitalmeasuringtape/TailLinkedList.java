@@ -37,12 +37,13 @@ public class TailLinkedList {
   }
   
   public void trim(float Gx) {
-	  System.out.println("Trimming Linked List");
+	  System.out.println("Trimming Linked List with Gx = " + Gx);
 	  Node trav = head;
 	  boolean firstTrim = true;
 	  while(head.next != null) {
 		  if(trav.x > 2 * Gx && firstTrim) {
 			  System.out.println("Trimmed at t = " + trav.time);
+			  System.out.println("Trimmed at x = " + trav.x);
 			  firstTrim = false;
 			  head = trav;
 			  break;
