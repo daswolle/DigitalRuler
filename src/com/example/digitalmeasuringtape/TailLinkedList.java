@@ -39,27 +39,50 @@ public class TailLinkedList {
   public void trim(float Gx) {
 	  System.out.println("Trimming Linked List with Gx = " + Gx);
 	  Node trav = head;
-	  boolean firstTrim = true;
 	  int i =0;
 	  Node save=null;
+	  Node savemore = tail;
+	  
 	  while(head.next != null) {
 		  i++;
-		  if(trav.x > 10 * Gx && firstTrim) {
-			  System.out.println("Trimmed at measurement = " + i);
-			  System.out.println("Trimmed at x = " + trav.x);
-			  firstTrim = false;
+		  if(Math.abs(trav.x) > Math.abs(10 * Gx)) {
+			  System.out.println("Left Trim at measurement = " + i);
+			  System.out.println("Left Trim at x = " + trav.x);
 			  save = head;
 			  head = trav;
 			  break;
 		  }
 		  trav = trav.next;
 	  }
+	  trav = tail;
+	  i=0;
+	  while(trav.prev != head) {
+		  i++;
+		  if(Math.abs(trav.x) > Math.abs(10 * Gx)) {
+			  System.out.println("Right Trim at measurement = " + i);
+			  System.out.println("Right Trim at x = " + trav.x);
+			  savemore = trav.next;
+			  trav.next = null;
+			  tail = trav;
+			  break;
+		  }
+		  trav = trav.prev;
+	  }
 	  
-	  System.out.print("Trimmed: x: [");
+	  System.out.print("Trim from left: x: [");
 	  while(save != head)
 	  {
 		  System.out.printf("%f, ",save.x);
 		  save= save.next;
+	  }
+	  System.out.println("]");
+	  
+	  
+	  System.out.print("Trim from right: x: [");
+	  while(savemore != null)
+	  {
+		  System.out.printf("%f, ",savemore.x);
+		  savemore= savemore.next;
 	  }
 	  System.out.println("]");
 	  
