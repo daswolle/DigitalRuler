@@ -118,16 +118,10 @@ public class Calibrate extends Activity implements SensorEventListener, Runnable
 			if (sPrefs.getBoolean("MeasureZ", false)) z = event.values[2];
 			long t = event.timestamp; 
 			
-			if (!sPrefs.getBoolean("MeasureY", false)) measurements.add(t, x);
-			else if (!sPrefs.getBoolean("MeasureZ", false)) measurements.add(t, x, y);
-			else measurements.add(t, x, y, z);
-	}
-	
-	
-	
-
-
-		
+			if (!sPrefs.getBoolean("MeasureY", false)) measurements.add(t, 0, x);
+			else if (!sPrefs.getBoolean("MeasureZ", false)) measurements.add(t, 0, x, y);
+			else measurements.add(t, 0, x, y, z);
+	}	
 
 	@Override
     public void run()
