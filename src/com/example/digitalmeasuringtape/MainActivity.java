@@ -83,6 +83,8 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		//-----
 		
 		 pw = (ProgressWheel) findViewById(R.id.pw_spinner);
+		 pw.setSpinSpeed(10);
+		 pw.setRimWidth(50);
 		
 		//check if calibrated
 		iCalibrate();
