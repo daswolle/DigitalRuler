@@ -66,6 +66,7 @@ public class TailLinkedList {
 	   //then we should stick this after tail,
 	   //and then have tail point to this
 	   tail.next = newNode;
+	   newNode.prev = tail;
 	   tail = newNode;
    }
   }
@@ -179,6 +180,7 @@ public class TailLinkedList {
   	
   	public long time;
   	public Node next;
+  	public Node prev;
 
  	 public Node(long newTime, float azimuth, float ... args) {
    		x = args[0];
@@ -187,6 +189,7 @@ public class TailLinkedList {
 	   time = newTime;
 	   this.azimuth = azimuth;  
 	   next = null;
+	   prev = null;
 	  }
 
  }
