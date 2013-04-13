@@ -313,7 +313,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		mSensorManager.unregisterListener(this, mAccelerometer);
 		mSensorManager.unregisterListener(this, mOrientation);
 		
-		measurements.trim(settings.getFloat("Gravity_x", 0));
+		measurements.trim(sPrefs.getFloat("Gravity_x", 0));
 		
 		System.out.println("returning from Collect()");
 		}
