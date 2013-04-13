@@ -40,16 +40,29 @@ public class TailLinkedList {
 	  System.out.println("Trimming Linked List with Gx = " + Gx);
 	  Node trav = head;
 	  boolean firstTrim = true;
+	  int i =0;
+	  Node save=null;
 	  while(head.next != null) {
-		  if(trav.x > 2 * Gx && firstTrim) {
-			  System.out.println("Trimmed at t = " + trav.time);
+		  i++;
+		  if(trav.x > 10 * Gx && firstTrim) {
+			  System.out.println("Trimmed at measurement = " + i);
 			  System.out.println("Trimmed at x = " + trav.x);
 			  firstTrim = false;
+			  save = head;
 			  head = trav;
 			  break;
 		  }
 		  trav = trav.next;
 	  }
+	  
+	  System.out.print("Trimmed: x: [");
+	  while(save != head)
+	  {
+		  System.out.printf("%f, ",save.x);
+		  save= save.next;
+	  }
+	  System.out.println("]");
+	  
 	  
   }
 
