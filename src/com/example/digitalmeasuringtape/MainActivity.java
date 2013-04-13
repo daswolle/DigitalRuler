@@ -40,6 +40,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	public CountDownLatch gate; //things call gate.await(), and get blocked.
 								//things become unblocked when gate.countDown()
 								//is called enough times, which will be 1
+	public ProgressWheel pw;
 	
 	protected void onExit()
 	{
@@ -81,6 +82,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		editor.commit();
 		//-----
 		
+		 pw = (ProgressWheel) findViewById(R.id.pw_spinner);
 		
 		//check if calibrated
 		iCalibrate();
@@ -132,12 +134,14 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		public boolean onTouch(View v, MotionEvent event) {
 	        if(event.getAction() == MotionEvent.ACTION_DOWN) {
 	            //start recording
+	        	pw.spin();
 	        	System.out.println("DOWN");
 	        	start_distance_process();
 	        	
 	        } else if (event.getAction() == MotionEvent.ACTION_UP) {
 	        	System.out.println("UP");
 	        	//kill thread on release of button
+	        	pw.stopSpinning();
 				activeThread = false;
 				if(gate!=null)
 	            	gate.countDown(); 	

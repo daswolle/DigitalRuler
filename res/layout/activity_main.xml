@@ -24,18 +24,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:src="@drawable/arrow" />
-    
-    <com.example.digitalmeasuringtape.ProgressWheel   
-		android:id="@+id/pw_spinner"     
-		android:layout_width="200dp"    
-		android:layout_height="200dp"   
-		android:layout_centerInParent="true"   
-		ProgressWheel:rimColor="#330097D6"   
-		ProgressWheel:barLength="60dp"    
-		ProgressWheel:barColor="#0097D6"   
-		ProgressWheel:barWidth="5dp"   
-		ProgressWheel:rimWidth="2dp" /> 
+        android:src="@drawable/arrow" /> 
 
     <TextView
         android:id="@+id/text1"
@@ -46,5 +35,17 @@
         android:layout_marginTop="14dp"
         android:text="@string/measurement"
         android:textSize="50sp" />
+
+    <com.example.digitalmeasuringtape.ProgressWheel
+        android:id="@+id/pw_spinner"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_above="@+id/text1"
+        android:layout_centerHorizontal="true"
+        ProgressWheel:barColor="#FF3300"
+        ProgressWheel:barLength="60dp"
+        ProgressWheel:barWidth="5dp"
+        ProgressWheel:rimColor="#330097D6"
+        ProgressWheel:rimWidth="2dp" />
 
 </RelativeLayout>
