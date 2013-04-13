@@ -3,8 +3,6 @@ package com.example.digitalmeasuringtape;
 import java.util.ArrayList;
 
 import android.content.SharedPreferences;
-import android.hardware.SensorManager;
-import android.util.FloatMath;
 
 public class PhysicsManager {
 

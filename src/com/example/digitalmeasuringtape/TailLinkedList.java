@@ -67,7 +67,7 @@ public class TailLinkedList {
 		  azimuthData.add(trav.azimuth);
 		  t = trav.time - t0;
 		  t /= 1000000000.0;
-		  tData.add((float)t);
+		  tData.add(t);
 		  trav = trav.next;
 	  }
 	  return;

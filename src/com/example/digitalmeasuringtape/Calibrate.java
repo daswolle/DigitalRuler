@@ -21,7 +21,8 @@ public class Calibrate extends Activity implements SensorEventListener, Runnable
 	public TailLinkedList measurements;
 	private String pi_string;
 	
-    public void onCreate(Bundle savedInstanceState) {
+    @Override
+	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 		
         sPrefs = PreferenceManager.getDefaultSharedPreferences(this);

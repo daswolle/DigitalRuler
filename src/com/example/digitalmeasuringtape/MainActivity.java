@@ -1,6 +1,5 @@
 package com.example.digitalmeasuringtape;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -63,13 +62,12 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		//setting up sensor managers
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-		mOrientation = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
+		mOrientation = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);		
 		
 		//hookup button
 		Button button = (Button)findViewById(R.id.button1);
 		button.setOnTouchListener(myListener);
 		
-		//-----TODO: these should be settable in settings
 		SharedPreferences.Editor editor = sPrefs.edit();
 		editor.putBoolean("MeasureX", true);
 		editor.putBoolean("MeasureY", false);
@@ -98,6 +96,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 			final Intent i = new Intent(this,Calibrate.class);		
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setPositiveButton("Ok. Calibrate me!", new DialogInterface.OnClickListener(){
+				@Override
 				public void onClick(DialogInterface dialog, int id){
 					//continue
 					dialog.dismiss();
@@ -129,7 +128,8 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	}
 	
 	private OnTouchListener myListener = new OnTouchListener(){
-	    public boolean onTouch(View v, MotionEvent event) {
+	    @Override
+		public boolean onTouch(View v, MotionEvent event) {
 	        if(event.getAction() == MotionEvent.ACTION_DOWN) {
 	            //start recording
 	        	System.out.println("DOWN");
@@ -178,6 +178,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 /***********end menu stuff***********/	
 	
 	//main method for thread
+	@Override
 	public void run()
 	{		
 		Measure();
@@ -353,6 +354,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		}
 	};
 	
+	@Override
 	public void onSensorChanged(SensorEvent event) {
 		
 		switch(event.sensor.getType())

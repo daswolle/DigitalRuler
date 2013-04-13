@@ -1,11 +1,7 @@
 package com.example.digitalmeasuringtape;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
-import android.view.Gravity;
-import android.view.WindowManager;
 
 public class Settings extends PreferenceActivity{
 	@Override
