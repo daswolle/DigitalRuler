@@ -73,17 +73,21 @@ public class TailLinkedList {
 	  //implementation of basic moving average; m = 1
 	  ArrayList<Float> sData = new ArrayList<Float>();
 	  float p;
+	  float p2;
 	  float c;
 	  float n;
+	  float n2;
 	  float avg;
 	  
 	  int STEPS = input.size();
-	  for(int i = 1; i < STEPS-2; i++)
+	  for(int i = 2; i < STEPS-3; i++)
 	  {
 		  p = input.get(i-1);
+		  p2 = input.get(i-2);
 		  c = input.get(i);
 		  n = input.get(i+1);
-		 avg = (p + c + n)/3;  
+		  n2 = input.get(i+2);
+		 avg = (p + p2 + c + n + n2)/5;  
 		  sData.add(avg);
 	  }
 	 

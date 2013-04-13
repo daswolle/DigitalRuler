@@ -200,14 +200,15 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		measurements.writeGraph("graphs.csv", xString, yString, tString);
 		
 		//TRIPLE SMOOTH
-		ArrayList<Float> xSmooth = measurements.smooth(measurements.xData);
-		ArrayList<Float> xSoSmooth = measurements.smooth(xSmooth);
-		ArrayList<Float> xSoSoSmooth = measurements.smooth(xSoSmooth);
-		String xSmoothString = measurements.listToString(xSoSoSmooth, "xS");
-		measurements.writeGraph("x_smooth.csv", xString, xSmoothString, tString);
+//		ArrayList<Float> xSmooth = measurements.smooth(measurements.xData);
+//		ArrayList<Float> xSoSmooth = measurements.smooth(xSmooth);
+//		ArrayList<Float> xSoSoSmooth = measurements.smooth(xSoSmooth);
+//		String xSmoothString = measurements.listToString(xSmooth, "xS");
+//		measurements.writeGraph("x_smooth.csv", xString, xSmoothString, tString);
 		//end saving data
 		
 		double d;
+		d = 0;
 		if (!sPrefs.getBoolean("MeasureY",false))
 		{
 			physics.RemoveGravity(	measurements.xData );
