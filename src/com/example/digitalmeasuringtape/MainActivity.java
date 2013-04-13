@@ -1,6 +1,5 @@
 package com.example.digitalmeasuringtape;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -33,10 +32,11 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	private static TextView tv;
 	private boolean activeThread = true;
 	private SensorManager mSensorManager;
-	private Sensor mAccelerometer;
+	private Sensor mAccelerometer, mOrientation;
 	private PhysicsManager physics;
 	public SharedPreferences sPrefs;
 	public TailLinkedList measurements;
+	public float greatestX, greatestY, greatestZ, lastAzimuth, firstAzimuth;
 	public CountDownLatch gate; //things call gate.await(), and get blocked.
 								//things become unblocked when gate.countDown()
 								//is called enough times, which will be 1
@@ -62,12 +62,12 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		//setting up sensor managers
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+		mOrientation = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);		
 		
 		//hookup button
 		Button button = (Button)findViewById(R.id.button1);
 		button.setOnTouchListener(myListener);
 		
-		//-----TODO: these should be settable in settings
 		SharedPreferences.Editor editor = sPrefs.edit();
 		editor.putBoolean("MeasureX", true);
 		editor.putBoolean("MeasureY", false);
@@ -96,6 +96,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 			final Intent i = new Intent(this,Calibrate.class);		
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setPositiveButton("Ok. Calibrate me!", new DialogInterface.OnClickListener(){
+				@Override
 				public void onClick(DialogInterface dialog, int id){
 					//continue
 					dialog.dismiss();
@@ -127,7 +128,8 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	}
 	
 	private OnTouchListener myListener = new OnTouchListener(){
-	    public boolean onTouch(View v, MotionEvent event) {
+	    @Override
+		public boolean onTouch(View v, MotionEvent event) {
 	        if(event.getAction() == MotionEvent.ACTION_DOWN) {
 	            //start recording
 	        	System.out.println("DOWN");
@@ -176,6 +178,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 /***********end menu stuff***********/	
 	
 	//main method for thread
+	@Override
 	public void run()
 	{		
 		Measure();
@@ -193,6 +196,9 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		
 		measurements.unravel();
 		
+		//correcting for if phone rotated about Z at any point
+		physics.Straighten(measurements.xData, measurements.azimuthData);
+		
 		//saving data		
 		String xString = measurements.listToString(measurements.xData, "x");
 		String yString = measurements.listToString(measurements.yData, "y");
@@ -200,14 +206,15 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		measurements.writeGraph("graphs.csv", xString, yString, tString);
 		
 		//TRIPLE SMOOTH
-		ArrayList<Float> xSmooth = measurements.smooth(measurements.xData);
-		ArrayList<Float> xSoSmooth = measurements.smooth(xSmooth);
-		ArrayList<Float> xSoSoSmooth = measurements.smooth(xSoSmooth);
-		String xSmoothString = measurements.listToString(xSoSoSmooth, "xS");
-		measurements.writeGraph("x_smooth.csv", xString, xSmoothString, tString);
+//		ArrayList<Float> xSmooth = measurements.smooth(measurements.xData);
+//		ArrayList<Float> xSoSmooth = measurements.smooth(xSmooth);
+//		ArrayList<Float> xSoSoSmooth = measurements.smooth(xSoSmooth);
+//		String xSmoothString = measurements.listToString(xSmooth, "xS");
+//		measurements.writeGraph("x_smooth.csv", xString, xSmoothString, tString);
 		//end saving data
 		
 		double d;
+		d = 0;
 		if (!sPrefs.getBoolean("MeasureY",false))
 		{
 			physics.RemoveGravity(	measurements.xData );
@@ -280,11 +287,14 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		System.out.println("Calling Collect()");
 		
 		measurements = new TailLinkedList();
+		firstAzimuth = -1f;
+		lastAzimuth = -1f;
 		gate = new CountDownLatch(1);
 		
 		boolean worked = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);	
+		boolean worked2 = mSensorManager.registerListener(this, mOrientation, SensorManager.SENSOR_DELAY_FASTEST);
 		
-		System.out.println("Return from registerlistener: " + worked );
+		System.out.println("Return from registerlistener: " + worked + " and " + worked2 );
 		List<Sensor> l = mSensorManager.getSensorList(Sensor.TYPE_ALL);
 		for(Sensor s : l)
 			System.out.println(s.getName());
@@ -297,6 +307,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		
 		//stop measuring
 		mSensorManager.unregisterListener(this, mAccelerometer);
+		mSensorManager.unregisterListener(this, mOrientation);
 		
 		System.out.println("returning from Collect()");
 		}
@@ -343,23 +354,44 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		}
 	};
 	
+	@Override
 	public void onSensorChanged(SensorEvent event) {
-		System.out.println("Measure: Accel Sensor Changed");
-		float x=0;
-		float y=0;
-		float z=0;
 		
-		x = event.values[0]; 
-		if (sPrefs.getBoolean("MeasureY", false)) y = event.values[1];
-		if (sPrefs.getBoolean("MeasureZ", false)) z = event.values[2];
-		long t = event.timestamp;
-		pi_string = "collecting";
-		handler.sendEmptyMessage(0);
+		switch(event.sensor.getType())
+		{
+		case Sensor.TYPE_ACCELEROMETER:
+			if(lastAzimuth == -1f)
+				break;
+			System.out.println("Measure: Accel Sensor Changed");
+			float x=0;
+			float y=0;
+			float z=0;
+			long  t=0;
+			
+			t = event.timestamp;
+			x = event.values[0]; 
+			if (sPrefs.getBoolean("MeasureY", false)) y = event.values[1];
+			if (sPrefs.getBoolean("MeasureZ", false)) z = event.values[2];
+			
+			if(x > greatestX) greatestX = x;
+			if(y > greatestY) greatestY = y;
+			if(z > greatestZ) greatestZ = z;
+			
+			
+			pi_string = "collecting";
+			handler.sendEmptyMessage(0);
+			
+			if (!sPrefs.getBoolean("MeasureY", false)) measurements.add(t, lastAzimuth, x);
+				else if (!sPrefs.getBoolean("MeasureZ", false)) measurements.add(t, lastAzimuth, x, y);
+				else measurements.add(t, lastAzimuth, x, y, z);
+			break;
+		case Sensor.TYPE_ORIENTATION:
+			if(firstAzimuth == -1f) 
+				firstAzimuth = event.values[0] / 360f * (float)(2 * Math.PI);
+			lastAzimuth = event.values[0]/ 360f * (float)(2 * Math.PI) - firstAzimuth;
+			break;
 		
-		if (!sPrefs.getBoolean("MeasureY", false)) measurements.add(t, x);
-			else if (!sPrefs.getBoolean("MeasureZ", false)) measurements.add(t, x, y);
-			else measurements.add(t, x, y, z);
-
+		}
 			
 	}
 	

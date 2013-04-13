@@ -3,8 +3,6 @@ package com.example.digitalmeasuringtape;
 import java.util.ArrayList;
 
 import android.content.SharedPreferences;
-import android.hardware.SensorManager;
-import android.util.FloatMath;
 
 public class PhysicsManager {
 
@@ -1075,8 +1073,24 @@ public class PhysicsManager {
 
 	}
 
+	public void Straighten(ArrayList<Float> xData, ArrayList<Float> azimuthData)
+	{
+		System.out.println("Entering Straighten");
+		float x, straightenedX, theta, secantTheta;
+		
+		for(int i = 0; i < xData.size(); i ++)
+		{
+			x = xData.get(i);
+			theta = azimuthData.get(i);
+			secantTheta = 1f / (float)Math.cos(theta); 
+			straightenedX = x * secantTheta;
+			System.out.printf("Step: %d \n\tX: %f\n\tTheta: %f\n\tStraightX: %f\n", i, x, theta, straightenedX);
+			xData.set(i, straightenedX);
+		}
+	}
+	
 	public void removeOutliers(ArrayList<Float> xData, double threshold) {
-		//threshold should probably be near .5
+	//threshold should probably be near .5
 		for (int i = 1; i < xData.size(); i++) {
 			// TODO: check i-1, i, and i+1, decide if its an outlier, change it
 			// if it is.

@@ -13,6 +13,7 @@ public class TailLinkedList {
   public ArrayList<Float> xData;
   public ArrayList<Float> yData;
   public ArrayList<Float> zData;
+  public ArrayList<Float> azimuthData;
   public ArrayList<Float> tData;
 
   public TailLinkedList() {
@@ -21,6 +22,7 @@ public class TailLinkedList {
 	  xData = new ArrayList<Float>();
 	  yData = new ArrayList<Float>();
 	  zData = new ArrayList<Float>();
+	  azimuthData = new ArrayList<Float>();
 	  tData = new ArrayList<Float>();
   }
 
@@ -30,11 +32,12 @@ public class TailLinkedList {
 	  xData = new ArrayList<Float>();
 	  yData = new ArrayList<Float>();
 	  zData = new ArrayList<Float>();
+	  azimuthData = new ArrayList<Float>();
 	  tData = new ArrayList<Float>();
   }
 
-  public void add(long time, float ... args) {
-   Node newNode = new Node(time, args);
+  public void add(long time, float azimuth, float ... args) {
+   Node newNode = new Node(time, azimuth, args);
    if(head==null && tail == null)
    {
 	   //then this is the first node inserted ever
@@ -61,9 +64,10 @@ public class TailLinkedList {
 		  xData.add(trav.x);
 		  yData.add(trav.y);
 		  zData.add(trav.z);
+		  azimuthData.add(trav.azimuth);
 		  t = trav.time - t0;
 		  t /= 1000000000.0;
-		  tData.add((float)t);
+		  tData.add(t);
 		  trav = trav.next;
 	  }
 	  return;
@@ -73,17 +77,21 @@ public class TailLinkedList {
 	  //implementation of basic moving average; m = 1
 	  ArrayList<Float> sData = new ArrayList<Float>();
 	  float p;
+	  float p2;
 	  float c;
 	  float n;
+	  float n2;
 	  float avg;
 	  
 	  int STEPS = input.size();
-	  for(int i = 1; i < STEPS-2; i++)
+	  for(int i = 2; i < STEPS-3; i++)
 	  {
 		  p = input.get(i-1);
+		  p2 = input.get(i-2);
 		  c = input.get(i);
 		  n = input.get(i+1);
-		 avg = (p + c + n)/3;  
+		  n2 = input.get(i+2);
+		 avg = (p + p2 + c + n + n2)/5;  
 		  sData.add(avg);
 	  }
 	 
@@ -150,15 +158,17 @@ public class TailLinkedList {
   	public float x;
   	public float y;
   	public float z;
+  	public float azimuth;
   	
   	public long time;
   	public Node next;
 
- 	 public Node(long newTime, float ... args) {
+ 	 public Node(long newTime, float azimuth, float ... args) {
    		x = args[0];
    		if(args.length >=2) y = args[1];
    		if(args.length >=3) z = args[2];
 	   time = newTime;
+	   this.azimuth = azimuth;  
 	   next = null;
 	  }
 
