@@ -41,7 +41,7 @@ public class TailLinkedList {
 	  Node trav = head;
 	  boolean firstTrim = true;
 	  while(head.next != null) {
-		  if(trav.x > 2 * Gx && firstTrim) {
+		  if(trav.x > 4 * Gx && firstTrim) {
 			  System.out.println("Trimmed at t = " + trav.time);
 			  firstTrim = false;
 			  head = trav;

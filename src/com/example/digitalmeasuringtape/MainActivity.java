@@ -200,6 +200,8 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		pi_string = "calculating";
 		handler.sendEmptyMessage(0);
 		
+		measurements.trim(sPrefs.getFloat("Gravity_x", 0));
+		
 		measurements.unravel();
 		
 		//correcting for if phone rotated about Z at any point
@@ -210,6 +212,13 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		String yString = measurements.listToString(measurements.yData, "y");
 		String tString = measurements.listToString(measurements.tData, "t");
 		measurements.writeGraph("graphs.csv", xString, yString, tString);
+		
+		
+		//saving data		
+		String xTrimString = measurements.listToString(measurements.xData, "x");
+		String yTrimString = measurements.listToString(measurements.yData, "y");
+		String tTrimString = measurements.listToString(measurements.tData, "t");
+		measurements.writeGraph("graphs_trim.csv", xString, yString, tString);
 		
 		//TRIPLE SMOOTH
 //		ArrayList<Float> xSmooth = measurements.smooth(measurements.xData);
@@ -314,8 +323,6 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		//stop measuring
 		mSensorManager.unregisterListener(this, mAccelerometer);
 		mSensorManager.unregisterListener(this, mOrientation);
-		
-		measurements.trim(sPrefs.getFloat("Gravity_x", 0));
 		
 		System.out.println("returning from Collect()");
 		}
