@@ -69,7 +69,7 @@ public class PhysicsManager {
 		System.out.println("Just calculated distance of: " + distance);
 		char c = 'x';
 		for (ArrayList<Float> i_accel : args)
-			if(i_accel != args[args.length-1] ) System.out.println(c++ + ": " + i_accel);
+			if(i_accel != args[args.length-1] ) System.out.println(i_accel.size() + " measurements\n"+c++ + ": " + i_accel);
 		
 		System.out.println("t: " + args[args.length-1]);
 		return distance;
@@ -97,8 +97,6 @@ public class PhysicsManager {
 			// y'_i = y''_(i-1) * dt
 			dt = t.get(i + 1) - t.get(i);
 			dx_veloc.add(x_accel.get(i) * dt);
-			System.out.println("Step: " + i + "\ndt: " + dt + "\n\tv_x:"
-					+ dx_veloc.get(i));
 		}
 		float temp = 0f;
 		for (float d : dx_veloc) {
@@ -117,8 +115,6 @@ public class PhysicsManager {
 			dt = t.get(i + 1) - t.get(i);
 			dx_disp.add(x_veloc.get(i) * dt);
 
-			System.out.println("Step: " + i + "\ndt: " + dt + "\n\td_x:"
-					+ dx_disp.get(i));
 		}
 
 		// vector addition, constructing R
@@ -126,7 +122,6 @@ public class PhysicsManager {
 		float r = 0; // [x]
 		for (int i = 0; i < STEPS - 1; i++) {
 			r += dx_disp.get(i);
-			System.out.println("Step: " + i + "\n\tr_x: " + r);
 		}
 
 		// Distance formula, constructing D
@@ -164,8 +159,6 @@ public class PhysicsManager {
 			dt = t.get(i + 1) - t.get(i);
 			dx_veloc.add(x_accel.get(i) * dt);
 			dy_veloc.add(y_accel.get(i) * dt);
-			System.out.println("Step: " + i + "\ndt: " + dt + "\n\tv_x:"
-					+ dx_veloc.get(i) + "\n\tv_y: " + dy_veloc.get(i));
 		}
 		float temp = 0f;
 		for (float d : dx_veloc) {
@@ -196,8 +189,6 @@ public class PhysicsManager {
 			dx_disp.add(x_veloc.get(i) * dt);
 			dy_disp.add(y_veloc.get(i) * dt);
 
-			System.out.println("Step: " + i + "\ndt: " + dt + "\n\td_x:"
-					+ dx_disp.get(i) + "\n\td_y: " + dy_disp.get(i));
 		}
 
 		// compose total displacement
@@ -211,8 +202,6 @@ public class PhysicsManager {
 			for (int i = 0; i < STEPS - 1; i++) {
 				rx += dx_disp.get(i);
 				ry += dy_disp.get(i);
-				System.out.println("Step: " + i + "\n\tr_x: " + rx
-						+ "\n\tr_y: " + ry);
 			}
 
 			// Distance formula, constructing D
@@ -267,9 +256,7 @@ public class PhysicsManager {
 			dx_veloc.add(x_accel.get(i) * dt);
 			dy_veloc.add(y_accel.get(i) * dt);
 			dz_veloc.add(z_accel.get(i) * dt);
-			System.out.println("Step: " + i + "\ndt: " + dt + "\n\tv_x:"
-					+ dx_veloc.get(i) + "\n\tv_y: " + dy_veloc.get(i)
-					+ "\n\tv_z: " + dz_veloc.get(i));
+
 		}
 		float temp = 0f;
 		for (float d : dx_veloc) {
@@ -309,10 +296,6 @@ public class PhysicsManager {
 			dx_disp.add(x_veloc.get(i) * dt);
 			dy_disp.add(y_veloc.get(i) * dt);
 			dz_disp.add(z_veloc.get(i) * dt);
-
-			System.out.println("Step: " + i + "\ndt: " + dt + "\n\td_x: "
-					+ dx_disp.get(i) + "\n\td_y: " + dy_disp.get(i)
-					+ "\n\td_z: " + dz_disp.get(i));
 		}
 
 		// compose total displacement
@@ -327,8 +310,7 @@ public class PhysicsManager {
 				rx += dx_disp.get(i);
 				ry += dy_disp.get(i);
 				rz += dz_disp.get(i);
-				System.out.println("Step: " + i + "\n\tr_x: " + rx
-						+ "\n\tr_y: " + ry + "\n\tr_z: " + rz);
+
 			}
 
 			// Distance formula, constructing D
@@ -366,8 +348,7 @@ public class PhysicsManager {
 			dx_veloc.add(x_accel.get(i) * dt + (.5f) * dt
 					* (x_accel.get(i + 1) - x_accel.get(i)));
 
-			System.out.println("Step: " + i + "\ndt: " + dt + "\n\tv_x: "
-					+ dx_veloc.get(i));
+
 		}
 
 		// Sum up all delta values
@@ -392,8 +373,6 @@ public class PhysicsManager {
 			dx_disp.add(x_veloc.get(i) * dt + (.5f) * dt
 					* (x_veloc.get(i + 1) - x_veloc.get(i)));
 
-			System.out.println("Step: " + i + "\ndt: " + dt + "\n\td_x: "
-					+ dx_disp.get(i));
 		}
 
 		// compose total displacement
@@ -403,7 +382,6 @@ public class PhysicsManager {
 
 		for (int i = 0; i < STEPS - 1; i++) {
 			rx += dx_disp.get(i);
-			System.out.println("Step: " + i + "\n\tr_x: " + rx);
 		}
 
 		// Distance formula, constructing D
@@ -440,8 +418,6 @@ public class PhysicsManager {
 			dy_veloc.add(y_accel.get(i) * dt + (.5f) * dt
 					* (y_accel.get(i + 1) - y_accel.get(i)));
 
-			System.out.println("Step: " + i + "\ndt: " + dt + "\n\tv_x: "
-					+ dx_veloc.get(i) + "\n\tv_y: " + dy_veloc.get(i));
 		}
 
 		// Sum up all delta values
@@ -477,8 +453,7 @@ public class PhysicsManager {
 			dy_disp.add(y_veloc.get(i) * dt + (.5f) * dt
 					* (y_veloc.get(i + 1) - y_veloc.get(i)));
 
-			System.out.println("Step: " + i + "\ndt: " + dt + "\n\td_x:"
-					+ dx_disp.get(i) + "\n\td_y: " + dy_disp.get(i));
+
 		}
 
 		// compose total displacement
@@ -492,8 +467,6 @@ public class PhysicsManager {
 			for (int i = 0; i < STEPS - 1; i++) {
 				rx += dx_disp.get(i);
 				ry += dy_disp.get(i);
-				System.out.println("Step: " + i + "\n\tr_x: " + rx
-						+ "\n\tr_y: " + ry);
 			}
 
 			// Distance formula, constructing D
@@ -547,9 +520,6 @@ public class PhysicsManager {
 			dz_veloc.add(z_accel.get(i) * dt + (.5f) * dt
 					* (y_accel.get(i + 1) - z_accel.get(i)));
 
-			System.out.println("Step: " + i + "\ndt: " + dt + "\n\tv_x: "
-					+ dx_veloc.get(i) + "\n\tv_y: " + dy_veloc.get(i)
-					+ "\n\tv_z: " + dz_veloc.get(i));
 		}
 
 		// Sum up all delta values
@@ -598,9 +568,6 @@ public class PhysicsManager {
 			dz_disp.add(z_veloc.get(i) * dt + (.5f) * dt
 					* (z_veloc.get(i + 1) - z_veloc.get(i)));
 
-			System.out.println("Step: " + i + "\ndt: " + dt + "\n\td_x: "
-					+ dx_disp.get(i) + "\n\td_y: " + dy_disp.get(i)
-					+ "\n\td_z: " + dz_disp.get(i));
 		}
 
 		// compose total displacement
@@ -616,8 +583,7 @@ public class PhysicsManager {
 				rx += dx_disp.get(i);
 				ry += dy_disp.get(i);
 				rz += dz_disp.get(i);
-				System.out.println("Step: " + i + "\n\tr_x: " + rx
-						+ "\n\tr_y: " + ry + "\n\tr_z: " + rz);
+
 			}
 
 			// Distance formula, constructing D
@@ -683,15 +649,35 @@ public class PhysicsManager {
 
 			dx_veloc.add(dv_x);
 
-			System.out.println("Step: " + i 
-								+ "\ndt: " + dt 
-								+ "\n\tv_x: " + dx_veloc.get(i) );
 		}
 		float temp = 0f;
 		for (float d : dx_veloc) {
 			temp += d;
 			x_veloc.add(temp);
 		}
+		
+		//--------------Some minor noise mitigation from velocity
+		//Theory: v-final should be zero because the phone is stopped.
+		//The amount that v-final is greater than zero is how much noise we accumulated.
+		//Simplistic assumption: we accumulate the same amount of noise in each step
+		//Process: Subtract 1/v.length * v-final from v1, subtract 2/v.length from v2, 3/v.length from v3...etc.
+		//This way, we only remove a tiny amount from the early measurements that have not accumulated much yet,
+		//and a larger amount from later, poluted measurements. Finally, we subtract the full v-final from v-final.
+		System.out.println("Removing noise from velocity...");
+		float totalNoise = x_veloc.get(x_veloc.size()-1) / 2;
+		for(int i = 0; i < x_veloc.size(); i ++) 
+		{
+			
+			float vi = x_veloc.get(i);
+			double clean_vi = vi - ((i+1.0) / x_veloc.size()) * totalNoise;
+			System.out.println("Factor: " + ((i+1.0) / x_veloc.size()));
+			System.out.printf("Step %d:\n\tDirty V: %f\n\tClean V: %f\n", i, vi, clean_vi);
+			x_veloc.set(i,(float)clean_vi);
+		}
+		
+		
+		//---------------
+		
 
 		ArrayList<Float> dx_disp = new ArrayList<Float>();
 
@@ -725,8 +711,6 @@ public class PhysicsManager {
 
 			dx_disp.add(dD_x);
 
-			System.out.println("Step: " + i + "\ndt: " + dt 
-								+ "\n\td_x: " + dx_disp.get(i));
 		}
 
 		// compose total displacement
@@ -800,8 +784,6 @@ public class PhysicsManager {
 			dx_veloc.add(dv_x);
 			dy_veloc.add(dv_y);
 
-			System.out.println("Step: " + i + "\ndt: " + dt + "\n\tv_x: "
-					+ dx_veloc.get(i) + "\n\tv_y: " + dy_veloc.get(i));
 		}
 		float temp = 0f;
 		for (float d : dx_veloc) {
@@ -852,8 +834,6 @@ public class PhysicsManager {
 			dx_disp.add(dD_x);
 			dy_disp.add(dD_y);
 
-			System.out.println("Step: " + i + "\ndt: " + dt + "\n\td_x: "
-					+ dx_disp.get(i) + "\n\td_y: " + dy_disp.get(i));
 		}
 
 		// compose total displacement
@@ -949,9 +929,6 @@ public class PhysicsManager {
 			dy_veloc.add(dv_y);
 			dy_veloc.add(dv_z);
 
-			System.out.println("Step: " + i + "\ndt: " + dt + "\n\tv_x: "
-					+ dx_veloc.get(i) + "\n\tv_y: " + dy_veloc.get(i)
-					+ "\n\tv_z: " + dz_veloc.get(i));
 		}
 		float temp = 0f;
 		for (float d : dx_veloc) {
@@ -1014,9 +991,6 @@ public class PhysicsManager {
 			dy_disp.add(dD_y);
 			dy_disp.add(dD_z);
 
-			System.out.println("Step: " + i + "\ndt: " + dt + "\n\td_x: "
-					+ dx_disp.get(i) + "\n\td_y: " + dy_disp.get(i)
-					+ "\n\td_z: " + dz_disp.get(i));
 		}
 
 		// compose total displacement
@@ -1084,7 +1058,6 @@ public class PhysicsManager {
 			theta = azimuthData.get(i);
 			secantTheta = 1f / (float)Math.cos(theta); 
 			straightenedX = x * secantTheta;
-			System.out.printf("Step: %d \n\tX: %f\n\tTheta: %f\n\tStraightX: %f\n", i, x, theta, straightenedX);
 			xData.set(i, straightenedX);
 		}
 	}

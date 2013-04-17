@@ -36,16 +36,17 @@ public class TailLinkedList {
 	  tData = new ArrayList<Float>();
   }
   
-  public void trim(float Gx) {
-	  System.out.println("Trimming Linked List with Gx = " + Gx);
-	  Node trav = head;
+  public void trim(float peakX) {
+	  System.out.println("Trimming Linked List\nThreshold = 5% * peakX = " + .05 * peakX);
+	  Node trav = head; if(head == null) return;
 	  int i =0;
 	  Node save=null;
 	  Node savemore = tail;
+	  float threshold = Math.abs(.05f * peakX); 
 	  
 	  while(head.next != null) {
 		  i++;
-		  if(Math.abs(trav.x) > Math.abs(10 * Gx)) {
+		  if(Math.abs(trav.x) > threshold) {
 			  System.out.println("Left Trim at measurement = " + i);
 			  System.out.println("Left Trim at x = " + trav.x);
 			  save = head;
@@ -58,7 +59,7 @@ public class TailLinkedList {
 	  i=0;
 	  while(trav.prev != head) {
 		  i++;
-		  if(Math.abs(trav.x) > Math.abs(10 * Gx)) {
+		  if(Math.abs(trav.x) > threshold) {
 			  System.out.println("Right Trim at measurement = " + i);
 			  System.out.println("Right Trim at x = " + trav.x);
 			  savemore = trav.next;

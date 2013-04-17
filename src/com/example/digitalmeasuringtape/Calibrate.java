@@ -85,7 +85,6 @@ public class Calibrate extends Activity implements SensorEventListener, Runnable
 			yAvg += yData.get(i);
 			zAvg += zData.get(i);
 		}
-		
 		xAvg /= xData.size();
 		yAvg /= yData.size();
 		zAvg /= zData.size();
@@ -109,7 +108,6 @@ public class Calibrate extends Activity implements SensorEventListener, Runnable
 
 	@Override
 	public void onSensorChanged(SensorEvent event) {
-			System.out.println("Calibrate: Accel Sensor changed");
 			float x=0;
 			float y=0;
 			float z=0;

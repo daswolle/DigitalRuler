@@ -313,7 +313,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		mSensorManager.unregisterListener(this, mAccelerometer);
 		mSensorManager.unregisterListener(this, mOrientation);
 		
-		measurements.trim(sPrefs.getFloat("Gravity_x", 0));
+		measurements.trim(greatestX);
 		
 		System.out.println("returning from Collect()");
 		}
@@ -368,7 +368,6 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		case Sensor.TYPE_ACCELEROMETER:
 			if(lastAzimuth == -1f)
 				break;
-			System.out.println("Measure: Accel Sensor Changed");
 			float x=0;
 			float y=0;
 			float z=0;
@@ -379,9 +378,9 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 			if (sPrefs.getBoolean("MeasureY", false)) y = event.values[1];
 			if (sPrefs.getBoolean("MeasureZ", false)) z = event.values[2];
 			
-			if(x > greatestX) greatestX = x;
-			if(y > greatestY) greatestY = y;
-			if(z > greatestZ) greatestZ = z;
+			if(Math.abs(x) > Math.abs(greatestX)) greatestX = x;
+			if(Math.abs(y) > Math.abs(greatestY)) greatestY = y;
+			if(Math.abs(z) > Math.abs(greatestZ)) greatestZ = y;
 			
 			
 			pi_string = "collecting";
