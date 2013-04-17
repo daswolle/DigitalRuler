@@ -290,8 +290,12 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		
 		System.out.println("Calling Collect()");
 		
+		SharedPreferences.Editor editor = sPrefs.edit();
 		measurements = new TailLinkedList();
 		firstAzimuth = -1f;
+		greatestX = 0;
+		greatestY = 0;
+		greatestZ = 0;
 		lastAzimuth = -1f;
 		gate = new CountDownLatch(1);
 		
@@ -312,6 +316,11 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		//stop measuring
 		mSensorManager.unregisterListener(this, mAccelerometer);
 		mSensorManager.unregisterListener(this, mOrientation);
+		
+		editor.putFloat("greatestX", greatestX);
+		editor.putFloat("greatestY", greatestY);
+		editor.putFloat("greatestZ", greatestZ);
+		editor.commit();
 		
 		measurements.trim(greatestX);
 		
