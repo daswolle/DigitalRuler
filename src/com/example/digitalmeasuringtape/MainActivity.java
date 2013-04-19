@@ -1,5 +1,6 @@
 package com.example.digitalmeasuringtape;
 
+import java.text.NumberFormat;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -85,9 +86,9 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		
 		//set up progress wheel settings
 		 pw = (ProgressWheel) findViewById(R.id.pw_spinner);
-		 pw.setSpinSpeed(10);
-		 pw.setBarWidth(50);
-		 pw.setRimWidth(50);
+//		 pw.setSpinSpeed(20);
+//		 pw.setBarWidth(50);
+//		 pw.setRimWidth(50);
 		
 		//check if calibrated
 //		iCalibrate();
@@ -134,33 +135,39 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 //		TODO dialog.dismiss();
 	}
 	
+	final CountDownTimer Count = new CountDownTimer(3000, 1){
+		public void onTick(long millisUntilFinished){
+			//counting down
+			tv.setText("seconds: " + millisUntilFinished / 1000);
+			pw.incrementProgress();
+			if (!buttonDown)
+			{
+				Count.cancel();
+				pw.resetCount();
+				tv.setText("--");
+				pw.stopSpinning();
+			}
+		}
+		public void onFinish(){
+			System.out.println("calibration finish");
+        	pw.stopSpinning();
+        	pw.resetCount();
+			//start recording
+			if (buttonDown)
+			{
+				start_distance_process();
+			}
+		}
+	};
+	
 	private OnTouchListener myListener = new OnTouchListener(){
 	    @Override
 		public boolean onTouch(View v, MotionEvent event) {
 	        if(event.getAction() == MotionEvent.ACTION_DOWN) {
 	        	//calibrate for 2 seconds
 	        	buttonDown = true;
-	        	tv.setText("calibrating");
-	    		new CountDownTimer(2000,1){
-	    			@Override
-	    			public void onTick(long millisUntilFinished){
-	    				//counting down
-	    				pw.incrementProgress();
-	    				if (!buttonDown)
-	    				{
-	    					cancel();
-	    					tv.setText("--");
-	    				}
-	    			}
-	    			
-	    			@Override
-	    			public void onFinish(){
-	    				System.out.println("calibration finished. dismiss and countdown");
-	    	        	pw.stopSpinning();
-	    				//start recording
-	    				start_distance_process();
-	    			}
-	    		}.start();
+//	        	tv.setText("calibrating");
+	        	Count.start();
 	        	System.out.println("DOWN");
 	        	
 	        } else if (event.getAction() == MotionEvent.ACTION_UP) {
@@ -178,10 +185,10 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	//connected to button's onClick
 	public void start_distance_process(){
 		//start thread
-		System.out.println("Started distance process.");
-		Thread thread = new Thread(this);
 		if (buttonDown)
 		{
+			Thread thread = new Thread(this);
+			System.out.println("Started distance process.");
 			thread.start();
 		}
 	}
@@ -234,17 +241,17 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		physics.Straighten(measurements.xData, measurements.azimuthData);
 		
 		//saving data		
-		String xString = measurements.listToString(measurements.xData, "x");
-		String yString = measurements.listToString(measurements.yData, "y");
-		String tString = measurements.listToString(measurements.tData, "t");
-		measurements.writeGraph("graphs.csv", xString, yString, tString);
+//		String xString = measurements.listToString(measurements.xData, "x");
+//		String yString = measurements.listToString(measurements.yData, "y");
+//		String tString = measurements.listToString(measurements.tData, "t");
+//		measurements.writeGraph("graphs.csv", xString, yString, tString);
 		
 		
 		//saving data		
-		String xTrimString = measurements.listToString(measurements.xData, "x");
-		String yTrimString = measurements.listToString(measurements.yData, "y");
-		String tTrimString = measurements.listToString(measurements.tData, "t");
-		measurements.writeGraph("graphs_trim.csv", xString, yString, tString);
+//		String xTrimString = measurements.listToString(measurements.xData, "x");
+//		String yTrimString = measurements.listToString(measurements.yData, "y");
+//		String tTrimString = measurements.listToString(measurements.tData, "t");
+//		measurements.writeGraph("graphs_trim.csv", xString, yString, tString);
 		
 		//TRIPLE SMOOTH
 //		ArrayList<Float> xSmooth = measurements.smooth(measurements.xData);
@@ -304,13 +311,13 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 			//TODO: this breaks if you measure for a long time and then press the button again quickly?
 			double x = Double.parseDouble(pi_string) * 3.28084;
 			
-			//round value
-			double range = 0.04;
-			int factor = (int) Math.round(x/range);
-			double result = factor * range;
+			NumberFormat nf = NumberFormat.getInstance();
+			nf.setMinimumFractionDigits(1);
+			nf.setMaximumFractionDigits(3);
+			String result = nf.format(x);
 			
 			System.out.println("double pi_string: " + result);
-			pi_string = Double.toString(result) + " ft";
+			pi_string = result + " ft";
 		}
 		else
 		{
