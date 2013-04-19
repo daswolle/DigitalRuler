@@ -15,6 +15,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
@@ -31,6 +32,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	private static String pi_string;
 	private static TextView tv;
 	private boolean activeThread = true;
+	private boolean buttonDown = false;
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer, mOrientation;
 	private PhysicsManager physics;
@@ -80,14 +82,15 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		
 		editor.putBoolean("PathMode", false);
 		editor.commit();
-		//-----
 		
+		//set up progress wheel settings
 		 pw = (ProgressWheel) findViewById(R.id.pw_spinner);
 		 pw.setSpinSpeed(10);
+		 pw.setBarWidth(50);
 		 pw.setRimWidth(50);
 		
 		//check if calibrated
-		iCalibrate();
+//		iCalibrate();
 	}
 	
 	public void iCalibrate()
@@ -135,15 +138,35 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	    @Override
 		public boolean onTouch(View v, MotionEvent event) {
 	        if(event.getAction() == MotionEvent.ACTION_DOWN) {
-	            //start recording
-	        	pw.spin();
+	        	//calibrate for 2 seconds
+	        	buttonDown = true;
+	        	tv.setText("calibrating");
+	    		new CountDownTimer(2000,1){
+	    			@Override
+	    			public void onTick(long millisUntilFinished){
+	    				//counting down
+	    				pw.incrementProgress();
+	    				if (!buttonDown)
+	    				{
+	    					cancel();
+	    					tv.setText("--");
+	    				}
+	    			}
+	    			
+	    			@Override
+	    			public void onFinish(){
+	    				System.out.println("calibration finished. dismiss and countdown");
+	    	        	pw.stopSpinning();
+	    				//start recording
+	    				start_distance_process();
+	    			}
+	    		}.start();
 	        	System.out.println("DOWN");
-	        	start_distance_process();
 	        	
 	        } else if (event.getAction() == MotionEvent.ACTION_UP) {
 	        	System.out.println("UP");
+	        	buttonDown = false;
 	        	//kill thread on release of button
-	        	pw.stopSpinning();
 				activeThread = false;
 				if(gate!=null)
 	            	gate.countDown(); 	
@@ -157,7 +180,10 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		//start thread
 		System.out.println("Started distance process.");
 		Thread thread = new Thread(this);
-		thread.start();
+		if (buttonDown)
+		{
+			thread.start();
+		}
 	}
 	
 /************menu stuff**************/
@@ -195,12 +221,10 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		
 		System.out.println("Calling Measure");
 		
-		Collect();
-		
 		pi_string = "calculating";
 		handler.sendEmptyMessage(0);
 		
-		measurements.trim(sPrefs.getFloat("Gravity_x", 0));
+//		measurements.trim(sPrefs.getFloat("Gravity_x", 0));
 		
 		measurements.unravel();
 		
@@ -275,6 +299,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		{
 			//convert to feet
 			System.out.println("pi_string: " + pi_string);
+			//TODO: this breaks if you measure for a long time and then press the button again quickly?
 			double x = Double.parseDouble(pi_string) * 3.28084;
 			
 			//round value
