@@ -1,6 +1,7 @@
 package com.example.digitalmeasuringtape;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -44,6 +45,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 								//things become unblocked when gate.countDown()
 								//is called enough times, which will be 1
 	public ProgressWheel pw;
+	public MainActivity me = this;
 	
 	protected void onExit()
 	{
@@ -86,7 +88,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		
 		//set up progress wheel settings
 		 pw = (ProgressWheel) findViewById(R.id.pw_spinner);
-//		 pw.setSpinSpeed(20);
+		 pw.setSpinSpeed(50);
 //		 pw.setBarWidth(50);
 //		 pw.setRimWidth(50);
 		
@@ -94,34 +96,62 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 //		iCalibrate();
 	}
 	
-	public void iCalibrate()
-	{
-		//check if Calibrated is true
-		boolean CALIBRATED = sPrefs.getBoolean("calibrated_pref_check", false);
-
-		if (!CALIBRATED){
-			//popup and say we need to calibrate
-			final Intent i = new Intent(this,Calibrate.class);		
-			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setPositiveButton("Ok. Calibrate me!", new DialogInterface.OnClickListener(){
-				@Override
-				public void onClick(DialogInterface dialog, int id){
-					//continue
-					dialog.dismiss();
-					startActivity(i);
-				}
-			});
-			builder.setMessage("We can't measure without Calibrating! Place the phone somewhere level and give us a few seconds to calibrate.").setTitle("WAIT!");
-			AlertDialog dialog = builder.create();
-			dialog.show();			
+	public void Calibrate()
+	{		
+		
+		//setting up sensor managers
+		SensorManager mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+		Sensor mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+		
+		System.out.println("Calibrate");
+		//make a fresh list, set gate as closed, register listener
+		measurements = new TailLinkedList();
+		boolean worked = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);	
+		System.out.println("Return from registerlistener: " + worked );
+		
+		try {
+			Thread.sleep(2000);
+			System.out.println("after sleep");
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
+		
+		mSensorManager.unregisterListener(this, mAccelerometer);
+		measurements.unravel();
+		ArrayList<Float> xData = measurements.xData;
+		ArrayList<Float> yData = measurements.yData;
+		ArrayList<Float> zData = measurements.zData;
+		
+		float xAvg = 0, yAvg = 0, zAvg = 0;
+		
+		for(int i = 0; i < xData.size(); i ++)
+		{
+			xAvg += xData.get(i);
+			yAvg += yData.get(i);
+			zAvg += zData.get(i);
+		}
+		xAvg /= xData.size();
+		yAvg /= yData.size();
+		zAvg /= zData.size();
+		
+		System.out.println("Gravity_x: " + xAvg);
+		System.out.println("Gravity_y: " + yAvg);
+		System.out.println("Gravity_z: " + zAvg);
+		
+		SharedPreferences.Editor editor = sPrefs.edit();
+		editor.putFloat("Gravity_x", xAvg);
+		editor.putFloat("Gravity_y", yAvg);	
+		editor.putFloat("Gravity_z", zAvg);		
+		editor.commit();
+		
+		System.out.println("end calibrate");
 	}
 	
 	@Override
 	protected void onRestart(){
 		super.onRestart();
 		
-		iCalibrate();
+//		Calibrate();
 		
 		tv = (TextView) this.findViewById(R.id.text1);
 		tv.setText("--");		
@@ -169,6 +199,9 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 //	        	tv.setText("calibrating");
 	        	Count.start();
 	        	System.out.println("DOWN");
+				Thread thread = new Thread(me);
+				System.out.println("Started distance process.");
+				thread.start();
 	        	
 	        } else if (event.getAction() == MotionEvent.ACTION_UP) {
 	        	System.out.println("UP");
@@ -185,12 +218,12 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	//connected to button's onClick
 	public void start_distance_process(){
 		//start thread
-		if (buttonDown)
-		{
+//		if (buttonDown)
+//		{
 			Thread thread = new Thread(this);
 			System.out.println("Started distance process.");
 			thread.start();
-		}
+//		}
 	}
 	
 /************menu stuff**************/
@@ -220,7 +253,14 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	@Override
 	public void run()
 	{		
-		Measure();
+		if (buttonDown)
+		{
+			Calibrate();
+		}
+		if (buttonDown)
+		{
+			Measure();	
+		}
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -233,7 +273,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		pi_string = "calculating";
 		handler.sendEmptyMessage(0);
 		
-//		measurements.trim(sPrefs.getFloat("Gravity_x", 0));
+		measurements.trim(sPrefs.getFloat("Gravity_x", 0));
 		
 		measurements.unravel();
 		
@@ -289,15 +329,22 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		}
 		
 		//d.toString(), then truncate to two decimal places
+		NumberFormat nf = NumberFormat.getInstance();
+		nf.setMinimumFractionDigits(1);
+		nf.setMaximumFractionDigits(3);
+		
 		String truncate;
 		if(d == -1.0) truncate = "-1.0"; 
 		if(d == 0) truncate = "0.0";
 		else
 		{
-			String d_str = Double.valueOf(d).toString(); 
-			truncate = d_str.substring(0, d_str.indexOf('.') + 3);
+//			String d_str = Double.valueOf(d).toString(); 
+//			truncate = d_str.substring(0, d_str.indexOf('.') + 3);
+			
+			truncate = nf.format(d);
+			
 		}
-		pi_string = truncate;
+//		pi_string = truncate;
 		
 		//get shared setting for measurement units
 		SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -307,26 +354,23 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		if (UNITS == 0)
 		{
 			//convert to feet
-			System.out.println("pi_string: " + pi_string);
+			System.out.println("truncate: " + truncate);
 			//TODO: this breaks if you measure for a long time and then press the button again quickly?
-			double x = Double.parseDouble(pi_string) * 3.28084;
+			double x = Double.parseDouble(truncate) * 3.28084;
 			
-			NumberFormat nf = NumberFormat.getInstance();
-			nf.setMinimumFractionDigits(1);
-			nf.setMaximumFractionDigits(3);
 			String result = nf.format(x);
 			
-			System.out.println("double pi_string: " + result);
+			System.out.println("double pi_string/truncate: " + result);
 			pi_string = result + " ft";
 		}
 		else
 		{
-			pi_string = pi_string + " m";
+			pi_string = truncate + " m";
 		}
 		
 		handler.sendEmptyMessage(0);
 		//pd.dismiss();
-		System.out.println(truncate);
+		System.out.println(pi_string);
 		System.out.println("returning from Measure()");
 		}
 	
@@ -367,7 +411,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		editor.putFloat("greatestZ", greatestZ);
 		editor.commit();
 		
-//		measurements.trim(greatestX);
+		measurements.trim(greatestX);
 		
 		System.out.println("returning from Collect()");
 		}
@@ -376,7 +420,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	// manages user touching the screen
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        System.out.println("onTouchEvent fired");
+//        System.out.println("onTouchEvent fired");
     	
         if (activeThread && event.getAction() == MotionEvent.ACTION_DOWN) {
             // we set the activeThread boolean to false,

@@ -24,8 +24,6 @@ public class Calibrate extends Activity implements SensorEventListener, Runnable
     @Override
 	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-		
-        sPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         
 		Thread thread = new Thread(this);
 		thread.start();
@@ -54,6 +52,8 @@ public class Calibrate extends Activity implements SensorEventListener, Runnable
     
 	public void calibrate()
 	{	
+        sPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+		
 		//setting up sensor managers
 		SensorManager mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		Sensor mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);

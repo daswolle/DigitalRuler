@@ -40,11 +40,11 @@ public class TailLinkedList {
 	  System.out.println("Trimming Linked List\nThreshold = 5% * peakX = " + .05 * peakX);
 	  Node trav = head; if(head == null) return;
 	  int i =0;
-	  Node save=null;
+	  Node save=head;
 	  Node savemore = tail;
 	  float threshold = Math.abs(.05f * peakX); 
 	  
-	  while(head.next != null) {
+	  while(trav.next != null) {
 		  i++;
 		  if(Math.abs(trav.x) > threshold) {
 			  System.out.println("Left Trim at measurement = " + i);
