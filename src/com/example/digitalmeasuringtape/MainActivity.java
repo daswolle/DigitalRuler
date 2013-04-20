@@ -165,11 +165,12 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 //		TODO dialog.dismiss();
 	}
 	
-	final CountDownTimer Count = new CountDownTimer(3000, 1){
+	final CountDownTimer Count = new CountDownTimer(2000, 30){
 		public void onTick(long millisUntilFinished){
 			//counting down
-			tv.setText("seconds: " + millisUntilFinished / 1000);
-			pw.incrementProgress();
+			tv.setText("seconds: " +1+ millisUntilFinished / 1000);
+			//pw.incrementProgress();
+			pw.setProgress((int)(360 - (double)(millisUntilFinished)/2000 * 360));
 			if (!buttonDown)
 			{
 				Count.cancel();
