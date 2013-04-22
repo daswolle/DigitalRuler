@@ -98,6 +98,10 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		SensorManager mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		Sensor mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		
+		greatestX = 0;
+		greatestY = 0;
+		greatestZ = 0;
+		
 		System.out.println("Calibrate");
 		//make a fresh list, set gate as closed, register listener
 		measurements = new TailLinkedList();
@@ -269,18 +273,16 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		System.out.println("Calling Measure");
 		
 		Collect();
-		
 		pi_string = "calculating";
 		handler.sendEmptyMessage(0);
 		
 		measurements.trim(sPrefs.getFloat("Gravity_x", 0));
 		
 		measurements.unravel();
-		
 //		physics.removeOutliers(measurements.xData, 1);
 		
 		//correcting for if phone rotated about Z at any point
-		physics.Straighten(measurements.xData, measurements.azimuthData);
+//		physics.Straighten(measurements.xData, measurements.azimuthData);
 		
 		//saving data		
 //		String xString = measurements.listToString(measurements.xData, "x");
@@ -342,44 +344,51 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		String truncate;
 		if(d == -1.0) truncate = "-1.0"; 
 		if(d == 0) truncate = "0.0";
+//		if(d == Float.NaN) truncate = "-1.0";
 		else
 		{			
 			truncate = nf.format(d);
 		}
 		
-		//get shared setting for measurement units
-		SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-		String y = sPrefs.getString("meas_units", "0");
-		int UNITS = Integer.valueOf(y);
-		System.out.println("UNITS INT: " + UNITS);
-		if (UNITS == 0)
+		if (d == Float.NaN)
 		{
-			//convert to feet
-			System.out.println("truncate: " + truncate);
-			double x = Double.parseDouble(truncate) * 3.28084;
-			
-			double f = (x - Math.floor(x)) * 12;
-			
-			x = Math.floor(x);
-			
-			String result = wnf.format(x);
-			String fraction = wnf.format(f);
-			
-			System.out.println("double pi_string/truncate: " + result);
-			
-			if (x==0)
-			{
-				pi_string = fraction + " in";
-			}
-			else{
-			pi_string = result + " ft " + fraction + " in";
-			}
+			pi_string = "Try Again, Bitch.";
 		}
 		else
 		{
-			pi_string = truncate + " m";
+			//get shared setting for measurement units
+			SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+			String y = sPrefs.getString("meas_units", "0");
+			int UNITS = Integer.valueOf(y);
+			System.out.println("UNITS INT: " + UNITS);
+			if (UNITS == 0)
+			{
+				//convert to feet
+				System.out.println("truncate: " + truncate);
+				double x = Double.parseDouble(truncate) * 3.28084;
+				
+				double f = (x - Math.floor(x)) * 12;
+				
+				x = Math.floor(x);
+				
+				String result = wnf.format(x);
+				String fraction = wnf.format(f);
+				
+				System.out.println("double pi_string/truncate: " + result);
+				
+				if (x==0)
+				{
+					pi_string = fraction + " in";
+				}
+				else{
+				pi_string = result + " ft " + fraction + " in";
+				}
+			}
+			else
+			{
+				pi_string = truncate + " m";
+			}
 		}
-		
 		handler.sendEmptyMessage(0);
 		System.out.println(pi_string);
 		System.out.println("returning from Measure()");
@@ -426,24 +435,6 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		
 		System.out.println("returning from Collect()");
 		}
-	
-	
-	// manages user touching the screen
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-//        System.out.println("onTouchEvent fired");
-    	
-        if (activeThread && event.getAction() == MotionEvent.ACTION_DOWN) {
-            // we set the activeThread boolean to false,
-            // forcing the loop from the Thread to end
-            activeThread = false;
-            if(gate!=null)
-            	gate.countDown(); 	//causes the thread's "run" method to continue.
-            						//"opens the gate"
-        }
-        
-        return super.onTouchEvent(event);
-    }
     
 	// manages user touching the screen
     public boolean stopMeasuring(MotionEvent event) {
@@ -464,7 +455,6 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	private static Handler handler = new Handler(){
 		@Override
 		public void handleMessage(Message mg){
-			//pd.dismiss();
 			tv.setText(pi_string);
 		}
 	};
@@ -482,8 +472,23 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 			float z=0;
 			long  t=0;
 			
+			//flatten
+//			if (event.values[0] > 15f)
+//			{
+//				x = 15f;
+//			}
+//			else if (event.values[0] < -15f)
+//			{
+//				x = -15f;
+//			}
+//			else
+//			{
+//				x = event.values[0];
+//			}
+			
 			t = event.timestamp;
 			x = event.values[0]; 
+//			x = 5f;
 			if (sPrefs.getBoolean("MeasureY", false)) y = event.values[1];
 			if (sPrefs.getBoolean("MeasureZ", false)) z = event.values[2];
 			

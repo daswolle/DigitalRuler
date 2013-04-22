@@ -1073,35 +1073,35 @@ public class PhysicsManager {
 		}
 	}
 	
-	public void removeOutliers(ArrayList<Float> xData, double threshold) {
-	//threshold should probably be near .5
-		for (int i = 1; i < xData.size()-1; i++) {
-			// TODO: check i-1, i, and i+1, decide if its an outlier, change it
-			// if it is.
-			if(xData.get(i-1) < xData.get(i + 1)){ //if previous is less than next
-				if(xData.get(i) < xData.get(i - 1)){ //if current is smaller than previous 
-					if(xData.get(i - 1) - xData.get(i) > threshold * (xData.get(i + 1) - xData.get(i - 1)) ) { //if previous - current > threshold * (next - previous)
-						xData.set(i, (float) (xData.get(i - 1) - (threshold * (xData.get(i + 1) - xData.get(i - 1))))); //set current to previous - threshold * (next - previous)
-					}
-				} else if(xData.get(i) > xData.get(i + 1)){ //else if current is greater than next
-					if(xData.get(i) - xData.get(i + 1) > threshold * (xData.get(i + 1) - xData.get(i - 1)) ){//if current - next > threshold * (next - previous)
-						xData.set(i, (float) (xData.get(i + 1) + (threshold * (xData.get(i + 1) - xData.get(i - 1)))));//set current to next + threshold * (next - previous)
-					}
-					
-				}
-			} else { //if next is less than previous
-				if(xData.get(i) < xData.get(i + 1)){ //if current is smaller than next 
-					if(xData.get(i + 1) - xData.get(i) > threshold * (xData.get(i - 1) - xData.get(i + 1)) ) { //if next - current > threshold * (previous - next)
-						xData.set(i, (float) (xData.get(i - 1) - (threshold * (xData.get(i - 1) - xData.get(i + 1))))); //set current to previous - threshold * (previous - next)
-					}
-				} else if(xData.get(i) > xData.get(i - 1)){ //if current is greater than previous
-					if(xData.get(i) - xData.get(i - 1) > threshold * (xData.get(i - 1) - xData.get(i + 1)) ){//if current - previous > threshold * (previous - next)
-						xData.set(i, (float) (xData.get(i - 1) + (threshold * (xData.get(i - 1) - xData.get(i + 1))))); //set current to previous + threshold * (previous - next)
-					}
-				}
-			}
-		}
-
-	}
+//	public void removeOutliers(ArrayList<Float> xData, double threshold) {
+//	//threshold should probably be near .5
+//		for (int i = 1; i < xData.size()-1; i++) {
+//			// TODO: check i-1, i, and i+1, decide if its an outlier, change it
+//			// if it is.
+//			if(xData.get(i-1) < xData.get(i + 1)){ //if previous is less than next
+//				if(xData.get(i) < xData.get(i - 1)){ //if current is smaller than previous 
+//					if(xData.get(i - 1) - xData.get(i) > threshold * (xData.get(i + 1) - xData.get(i - 1)) ) { //if previous - current > threshold * (next - previous)
+//						xData.set(i, (float) (xData.get(i - 1) - (threshold * (xData.get(i + 1) - xData.get(i - 1))))); //set current to previous - threshold * (next - previous)
+//					}
+//				} else if(xData.get(i) > xData.get(i + 1)){ //else if current is greater than next
+//					if(xData.get(i) - xData.get(i + 1) > threshold * (xData.get(i + 1) - xData.get(i - 1)) ){//if current - next > threshold * (next - previous)
+//						xData.set(i, (float) (xData.get(i + 1) + (threshold * (xData.get(i + 1) - xData.get(i - 1)))));//set current to next + threshold * (next - previous)
+//					}
+//					
+//				}
+//			} else { //if next is less than previous
+//				if(xData.get(i) < xData.get(i + 1)){ //if current is smaller than next 
+//					if(xData.get(i + 1) - xData.get(i) > threshold * (xData.get(i - 1) - xData.get(i + 1)) ) { //if next - current > threshold * (previous - next)
+//						xData.set(i, (float) (xData.get(i - 1) - (threshold * (xData.get(i - 1) - xData.get(i + 1))))); //set current to previous - threshold * (previous - next)
+//					}
+//				} else if(xData.get(i) > xData.get(i - 1)){ //if current is greater than previous
+//					if(xData.get(i) - xData.get(i - 1) > threshold * (xData.get(i - 1) - xData.get(i + 1)) ){//if current - previous > threshold * (previous - next)
+//						xData.set(i, (float) (xData.get(i - 1) + (threshold * (xData.get(i - 1) - xData.get(i + 1))))); //set current to previous + threshold * (previous - next)
+//					}
+//				}
+//			}
+//		}
+//
+//	}
 
 }
