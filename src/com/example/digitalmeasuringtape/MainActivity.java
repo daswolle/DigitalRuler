@@ -279,31 +279,12 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		measurements.trim(sPrefs.getFloat("Gravity_x", 0));
 		
 		measurements.unravel();
-//		physics.removeOutliers(measurements.xData, 1);
-		
-		//correcting for if phone rotated about Z at any point
-//		physics.Straighten(measurements.xData, measurements.azimuthData);
 		
 		//saving data		
-//		String xString = measurements.listToString(measurements.xData, "x");
-//		String yString = measurements.listToString(measurements.yData, "y");
-//		String tString = measurements.listToString(measurements.tData, "t");
-//		measurements.writeGraph("graphs.csv", xString, yString, tString);
-		
-		
-		//saving data		
-//		String xTrimString = measurements.listToString(measurements.xData, "x");
-//		String yTrimString = measurements.listToString(measurements.yData, "y");
-//		String tTrimString = measurements.listToString(measurements.tData, "t");
-//		measurements.writeGraph("graphs_trim.csv", xString, yString, tString);
-		
-		//TRIPLE SMOOTH
-//		ArrayList<Float> xSmooth = measurements.smooth(measurements.xData);
-//		ArrayList<Float> xSoSmooth = measurements.smooth(xSmooth);
-//		ArrayList<Float> xSoSoSmooth = measurements.smooth(xSoSmooth);
-//		String xSmoothString = measurements.listToString(xSmooth, "xS");
-//		measurements.writeGraph("x_smooth.csv", xString, xSmoothString, tString);
-		//end saving data
+		String xString = measurements.listToString(measurements.xData, "x");
+		String yString = measurements.listToString(measurements.yData, "y");
+		String tString = measurements.listToString(measurements.tData, "t");
+		measurements.writeGraph("graphs.csv", xString, yString, tString);
 		
 		double d;
 		d = 0;
@@ -344,7 +325,6 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		String truncate;
 		if(d == -1.0) truncate = "-1.0"; 
 		if(d == 0) truncate = "0.0";
-//		if(d == Float.NaN) truncate = "-1.0";
 		else
 		{			
 			truncate = nf.format(d);
@@ -352,7 +332,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		
 		if (d == Float.NaN)
 		{
-			pi_string = "Try Again, Bitch.";
+			pi_string = "Error. Try Again.";
 		}
 		else
 		{
@@ -472,23 +452,9 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 			float z=0;
 			long  t=0;
 			
-			//flatten
-//			if (event.values[0] > 15f)
-//			{
-//				x = 15f;
-//			}
-//			else if (event.values[0] < -15f)
-//			{
-//				x = -15f;
-//			}
-//			else
-//			{
-//				x = event.values[0];
-//			}
-			
 			t = event.timestamp;
 			x = event.values[0]; 
-//			x = 5f;
+			
 			if (sPrefs.getBoolean("MeasureY", false)) y = event.values[1];
 			if (sPrefs.getBoolean("MeasureZ", false)) z = event.values[2];
 			
