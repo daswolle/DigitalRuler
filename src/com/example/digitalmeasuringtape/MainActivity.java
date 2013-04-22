@@ -274,7 +274,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		Collect();
 		pi_string = "calculating";
 		handler.sendEmptyMessage(0);
-		measurements.trim(sPrefs.getFloat("Gravity_x", 0));
+		measurements.trim(greatestX);
 		measurements.unravel();
 		
 		//saving data		
@@ -288,7 +288,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		if (!sPrefs.getBoolean("MeasureY",false))
 		{
 			physics.RemoveGravity(	measurements.xData );
-			
+			physics.LowPassFilter(	measurements.xData );
 			 d = physics.Distance(	measurements.xData,
 					 				measurements.tData);
 		}

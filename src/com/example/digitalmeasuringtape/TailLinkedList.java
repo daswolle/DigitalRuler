@@ -34,7 +34,8 @@ public class TailLinkedList {
   }
   
   public void trim(float peakX) {
-	  System.out.println("Trimming Linked List\nThreshold = 5% * peakX = " + .05 * peakX);
+	  System.out.println("Trimming Linked List..." +
+	  					"\n\tpeakX = " + peakX + "\n\tThreshold = 5% * peakX = " + .05 * peakX);
 	  Node trav = head; if(head == null) return;
 	  int i =0;
 	  Node save=head;
