@@ -659,25 +659,20 @@ public class PhysicsManager {
 		//--------------Some minor noise mitigation from velocity
 		//Theory: v-final should be zero because the phone is stopped.
 		//The amount that v-final is greater than zero is how much noise we accumulated.
-		//Simplistic assumption: we accumulate the same amount of noise in each step
-		//Process: Subtract 1/v.length * v-final from v1, subtract 2/v.length from v2, 3/v.length from v3...etc.
-		//This way, we only remove a tiny amount from the early measurements that have not accumulated much yet,
-		//and a larger amount from later, poluted measurements. Finally, we subtract the full v-final from v-final.
+		//v-final divided by N, the number of measurements is the avg. noise from each measurement
+		//Assumption: we accumulate more noise from small measurements than large measurements
+		//Process: Subtract ( N/v-final) * factor from each step, 
+		//where factor is near 1 for small measurements and near 0 for large measurements 
 		System.out.println("Removing noise from velocity...");
 		float totalNoise = x_veloc.get(x_veloc.size()-1);
 		float avgNoisePerStep = totalNoise / x_veloc.size();
 		double maxX = settings.getFloat("greatestX", -1);
-		System.out.printf("TotalNoise: %f\nAverage Noise per Step: %f\nMax X: %f\n", totalNoise, avgNoisePerStep, maxX);
 		for(int i = 0; i < dx_veloc.size(); i ++) 
 		{
 			
 			float dvi = dx_veloc.get(i);
-			double factor = 1.5- (Math.abs(x_accel.get(i) / maxX) ); //"small" measurements add more noise than "large" ones
-			
+			double factor = 1 - (Math.abs(x_accel.get(i) / maxX) ); //"small" measurements add more noise than "large" ones
 			double clean_dvi = dvi - factor * avgNoisePerStep;
-			
-			System.out.println("Factor: " + factor);
-			System.out.printf("Step %d:\n\tDirty dV: %f\n\tClean dV: %f\n", i, dvi, clean_dvi);
 			dx_veloc.set(i,(float)clean_dvi);
 		}
 		
@@ -687,8 +682,10 @@ public class PhysicsManager {
 			temp += d;
 			x_veloc.add(temp);
 		}
-		//---------------
 		
+		//--------------------------------------
+		//end of noise mitigation---------------
+		//--------------------------------------
 
 		ArrayList<Float> dx_disp = new ArrayList<Float>();
 
