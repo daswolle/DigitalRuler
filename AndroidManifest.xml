@@ -37,6 +37,7 @@
            android:name="com.example.digitalmeasuringtape.Settings"
            android:label="Settings" >
        </activity>
+       <activity android:name="Help"></activity>
     </application>
 
 </manifest>

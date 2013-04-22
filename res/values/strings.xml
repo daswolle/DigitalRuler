@@ -11,6 +11,18 @@
     <string name="button_send">Start</string>
     <string name="about">About text on page</string>
     
+    <string name="help_message">Need some help?\n\n
+This app is extremely easy to use! This app was designed to help you measure things by simply sliding your phone.\n\n
+
+Hold down the start button until the ring fills up all the way. Then, when you see the word \'GO!\', you can start sliding your phone.\n\n
+
+When you moved the phone a distance you want to measure, just release the button and give it a second to complete some calculations.\n\n
+
+Be sure to keep the phone completely flat on the surface while measuring, otherwise there can be some problems.\n\n
+
+That\'s it! Happy measuring!
+    </string>
+    
     
     <!-- settings -->
     <string name="setting_header1">Measurement Type</string>

@@ -672,7 +672,7 @@ public class PhysicsManager {
 		{
 			
 			float dvi = dx_veloc.get(i);
-			double factor = 1- (Math.abs(x_accel.get(i) / maxX) ); //"small" measurements add more noise than "large" ones
+			double factor = 1.5- (Math.abs(x_accel.get(i) / maxX) ); //"small" measurements add more noise than "large" ones
 			
 			double clean_dvi = dvi - factor * avgNoisePerStep;
 			
@@ -1075,7 +1075,7 @@ public class PhysicsManager {
 	
 	public void removeOutliers(ArrayList<Float> xData, double threshold) {
 	//threshold should probably be near .5
-		for (int i = 1; i < xData.size(); i++) {
+		for (int i = 1; i < xData.size()-1; i++) {
 			// TODO: check i-1, i, and i+1, decide if its an outlier, change it
 			// if it is.
 			if(xData.get(i-1) < xData.get(i + 1)){ //if previous is less than next

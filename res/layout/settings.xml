@@ -8,19 +8,13 @@
     <PreferenceCategory 
         android:title="Measurement Type">
 		<ListPreference
-		    android:title="Choose Measurement Type"
-		    android:summary="Choose which type of measurement"
-		    android:key="measType"
-		    android:entries="@array/settings_list"
-		    android:entryValues="@array/settings_list_values" />
-		<ListPreference
 		    android:title="Choose Units"
 		    android:summary="Metric or SI?"
 		    android:key="meas_units"
 		    android:entries="@array/settings_units"
 		    android:entryValues="@array/settings_units_values" />
     </PreferenceCategory>
-    <PreferenceCategory
+<!--    <PreferenceCategory
         android:title="Calibration">
         <Preference
             android:title="Calibrate"
@@ -37,11 +31,8 @@
             android:summary="has this device been calibrated?"
             android:defaultValue="false"
             />
-<!--         <Preference
-            android:title="getMinDelay()"
-            android:summary="returns minimum time data for a sensor to return data" 
-            android:onClick="calibrate_sensor"/> -->
     </PreferenceCategory>
+     -->            
     <PreferenceCategory
         android:title="Measurement Axis">
         <Preference
@@ -61,5 +52,17 @@
             android:summary="Do you want to meausre in the Z axis?"
             android:defaultValue="false"
             />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="Help">
+            <Preference
+            android:title="Help"
+            android:summary="Need a quick walk through?" 
+            android:key="launch_help">
+              <intent
+                  android:action="android.intent.action.MAIN"
+                  android:targetPackage="com.example.digitalmeasuringtape"
+                  android:targetClass="com.example.digitalmeasuringtape.Help" />
+              </Preference>
     </PreferenceCategory>
 </PreferenceScreen>

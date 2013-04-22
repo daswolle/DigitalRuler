@@ -35,6 +35,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	private static TextView tv;
 	private boolean activeThread = true;
 	private boolean buttonDown = false;
+	private boolean calibrating = true;
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer, mOrientation;
 	private PhysicsManager physics;
@@ -89,16 +90,10 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		//set up progress wheel settings
 		 pw = (ProgressWheel) findViewById(R.id.pw_spinner);
 		 pw.setSpinSpeed(50);
-//		 pw.setBarWidth(50);
-//		 pw.setRimWidth(50);
-		
-		//check if calibrated
-//		iCalibrate();
 	}
 	
 	public void Calibrate()
 	{		
-		
 		//setting up sensor managers
 		SensorManager mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		Sensor mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -107,6 +102,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		//make a fresh list, set gate as closed, register listener
 		measurements = new TailLinkedList();
 		boolean worked = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);	
+		calibrating = true;
 		System.out.println("Return from registerlistener: " + worked );
 		
 		try {
@@ -115,8 +111,11 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		
-		mSensorManager.unregisterListener(this, mAccelerometer);
+		if (calibrating)
+		{
+			mSensorManager.unregisterListener(this, mAccelerometer);
+		}
+		calibrating = false;
 		measurements.unravel();
 		ArrayList<Float> xData = measurements.xData;
 		ArrayList<Float> yData = measurements.yData;
@@ -150,11 +149,9 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	@Override
 	protected void onRestart(){
 		super.onRestart();
-		
-//		Calibrate();
-		
-		tv = (TextView) this.findViewById(R.id.text1);
-		tv.setText("--");		
+		//reset text view
+//		tv = (TextView) this.findViewById(R.id.text1);
+//		tv.setText("--");		
 	}
 	
 	//temporary to make sure this app isn't the one draining my battery...
@@ -162,17 +159,18 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	protected void onStop(){
 		super.onStop();
 		onDestroy();
-//		TODO dialog.dismiss();
 	}
 	
 	final CountDownTimer Count = new CountDownTimer(2000, 30){
 		public void onTick(long millisUntilFinished){
 			//counting down
-			tv.setText("seconds: " +1+ millisUntilFinished / 1000);
-			//pw.incrementProgress();
 			pw.setProgress((int)(360 - (double)(millisUntilFinished)/2000 * 360));
 			if (!buttonDown)
 			{
+				if (calibrating)
+				{
+					mSensorManager.unregisterListener(me, mAccelerometer);
+				}
 				Count.cancel();
 				pw.resetCount();
 				tv.setText("--");
@@ -197,7 +195,6 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	        if(event.getAction() == MotionEvent.ACTION_DOWN) {
 	        	//calibrate for 2 seconds
 	        	buttonDown = true;
-//	        	tv.setText("calibrating");
 	        	Count.start();
 	        	System.out.println("DOWN");
 				Thread thread = new Thread(me);
@@ -221,9 +218,9 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		//start thread
 //		if (buttonDown)
 //		{
-			Thread thread = new Thread(this);
-			System.out.println("Started distance process.");
-			thread.start();
+//			Thread thread = new Thread(this);
+//			System.out.println("Started distance process.");
+//			thread.start();
 //		}
 	}
 	
@@ -232,8 +229,6 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
-//		Intent intent = new Intent(this, Settings.class);
-//		startActivity(intent);
 		return true;
 	}
 	
@@ -256,10 +251,14 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	{		
 		if (buttonDown)
 		{
+			pi_string="Calibrating";
+			handler.sendEmptyMessage(0);
 			Calibrate();
 		}
 		if (buttonDown)
 		{
+			pi_string="GO!";
+			handler.sendEmptyMessage(0);
 			Measure();	
 		}
 	}
@@ -277,6 +276,8 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		measurements.trim(sPrefs.getFloat("Gravity_x", 0));
 		
 		measurements.unravel();
+		
+//		physics.removeOutliers(measurements.xData, 1);
 		
 		//correcting for if phone rotated about Z at any point
 		physics.Straighten(measurements.xData, measurements.azimuthData);
@@ -334,18 +335,17 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		nf.setMinimumFractionDigits(1);
 		nf.setMaximumFractionDigits(3);
 		
+		NumberFormat wnf = NumberFormat.getInstance();
+		wnf.setMinimumFractionDigits(0);
+		wnf.setMaximumFractionDigits(1);
+		
 		String truncate;
 		if(d == -1.0) truncate = "-1.0"; 
 		if(d == 0) truncate = "0.0";
 		else
-		{
-//			String d_str = Double.valueOf(d).toString(); 
-//			truncate = d_str.substring(0, d_str.indexOf('.') + 3);
-			
+		{			
 			truncate = nf.format(d);
-			
 		}
-//		pi_string = truncate;
 		
 		//get shared setting for measurement units
 		SharedPreferences sPrefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -356,13 +356,24 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		{
 			//convert to feet
 			System.out.println("truncate: " + truncate);
-			//TODO: this breaks if you measure for a long time and then press the button again quickly?
 			double x = Double.parseDouble(truncate) * 3.28084;
 			
-			String result = nf.format(x);
+			double f = (x - Math.floor(x)) * 12;
+			
+			x = Math.floor(x);
+			
+			String result = wnf.format(x);
+			String fraction = wnf.format(f);
 			
 			System.out.println("double pi_string/truncate: " + result);
-			pi_string = result + " ft";
+			
+			if (x==0)
+			{
+				pi_string = fraction + " in";
+			}
+			else{
+			pi_string = result + " ft " + fraction + " in";
+			}
 		}
 		else
 		{
@@ -370,7 +381,6 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		}
 		
 		handler.sendEmptyMessage(0);
-		//pd.dismiss();
 		System.out.println(pi_string);
 		System.out.println("returning from Measure()");
 		}
@@ -480,10 +490,6 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 			if(Math.abs(x) > Math.abs(greatestX)) greatestX = x;
 			if(Math.abs(y) > Math.abs(greatestY)) greatestY = y;
 			if(Math.abs(z) > Math.abs(greatestZ)) greatestZ = y;
-			
-			
-			pi_string = "collecting";
-			handler.sendEmptyMessage(0);
 			
 			if (!sPrefs.getBoolean("MeasureY", false)) measurements.add(t, lastAzimuth, x);
 				else if (!sPrefs.getBoolean("MeasureZ", false)) measurements.add(t, lastAzimuth, x, y);
