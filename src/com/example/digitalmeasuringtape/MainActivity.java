@@ -37,11 +37,11 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	private boolean buttonDown = false;
 	private boolean calibrating = true;
 	private SensorManager mSensorManager;
-	private Sensor mAccelerometer, mOrientation;
+	private Sensor mAccelerometer;
 	private PhysicsManager physics;
 	public SharedPreferences sPrefs;
 	public TailLinkedList measurements;
-	public float greatestX, greatestY, greatestZ, lastAzimuth, firstAzimuth;
+	public float greatestX, greatestY, greatestZ;
 	public CountDownLatch gate; //things call gate.await(), and get blocked.
 								//things become unblocked when gate.countDown()
 								//is called enough times, which will be 1
@@ -69,7 +69,6 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		//setting up sensor managers
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-		mOrientation = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);		
 		
 		//hookup button
 		Button button = (Button)findViewById(R.id.button1);
@@ -275,9 +274,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		Collect();
 		pi_string = "calculating";
 		handler.sendEmptyMessage(0);
-		
 		measurements.trim(sPrefs.getFloat("Gravity_x", 0));
-		
 		measurements.unravel();
 		
 		//saving data		
@@ -291,6 +288,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		if (!sPrefs.getBoolean("MeasureY",false))
 		{
 			physics.RemoveGravity(	measurements.xData );
+			
 			 d = physics.Distance(	measurements.xData,
 					 				measurements.tData);
 		}
@@ -298,6 +296,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		{
 			physics.RemoveGravity(	measurements.xData,
 									measurements.yData);
+			
 			 d = physics.Distance(	measurements.xData,
 					 				measurements.yData,
 					 				measurements.tData);
@@ -307,6 +306,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 			physics.RemoveGravity(	measurements.xData,
 									measurements.yData,
 									measurements.zData);
+			
 			 d = physics.Distance(	measurements.xData,
 					 				measurements.yData,
 					 				measurements.zData,
@@ -381,17 +381,14 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		
 		SharedPreferences.Editor editor = sPrefs.edit();
 		measurements = new TailLinkedList();
-		firstAzimuth = -1f;
 		greatestX = 0;
 		greatestY = 0;
 		greatestZ = 0;
-		lastAzimuth = -1f;
 		gate = new CountDownLatch(1);
 		
 		boolean worked = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);	
-		boolean worked2 = mSensorManager.registerListener(this, mOrientation, SensorManager.SENSOR_DELAY_FASTEST);
 		
-		System.out.println("Return from registerlistener: " + worked + " and " + worked2 );
+		System.out.println("Return from registerlistener: " + worked);
 		List<Sensor> l = mSensorManager.getSensorList(Sensor.TYPE_ALL);
 		for(Sensor s : l)
 			System.out.println(s.getName());
@@ -404,7 +401,6 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		
 		//stop measuring
 		mSensorManager.unregisterListener(this, mAccelerometer);
-		mSensorManager.unregisterListener(this, mOrientation);
 		
 		editor.putFloat("greatestX", greatestX);
 		editor.putFloat("greatestY", greatestY);
@@ -442,19 +438,12 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 		
-		switch(event.sensor.getType())
-		{
-		case Sensor.TYPE_ACCELEROMETER:
-			if(lastAzimuth == -1f)
-				break;
 			float x=0;
 			float y=0;
-			float z=0;
-			long  t=0;
+			float z=0; 
+			long  t=event.timestamp;
 			
-			t = event.timestamp;
 			x = event.values[0]; 
-			
 			if (sPrefs.getBoolean("MeasureY", false)) y = event.values[1];
 			if (sPrefs.getBoolean("MeasureZ", false)) z = event.values[2];
 			
@@ -462,24 +451,13 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 			if(Math.abs(y) > Math.abs(greatestY)) greatestY = y;
 			if(Math.abs(z) > Math.abs(greatestZ)) greatestZ = y;
 			
-			if (!sPrefs.getBoolean("MeasureY", false)) measurements.add(t, lastAzimuth, x);
-				else if (!sPrefs.getBoolean("MeasureZ", false)) measurements.add(t, lastAzimuth, x, y);
-				else measurements.add(t, lastAzimuth, x, y, z);
-			break;
-		case Sensor.TYPE_ORIENTATION:
-			if(firstAzimuth == -1f) 
-				firstAzimuth = event.values[0] / 360f * (float)(2 * Math.PI);
-			lastAzimuth = event.values[0]/ 360f * (float)(2 * Math.PI) - firstAzimuth;
-			break;
-		
-		}
-			
+			if (!sPrefs.getBoolean("MeasureY", false)) measurements.add(t, x);
+				else if (!sPrefs.getBoolean("MeasureZ", false)) measurements.add(t, x, y);
+				else measurements.add(t, x, y, z);
 	}
 	
 	@Override
 	public void onAccuracyChanged(Sensor arg0, int arg1) {
-		//System.out.println("onAccuracyChanged fired");
-		
 	}
 
 }
