@@ -74,6 +74,14 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		Button button = (Button)findViewById(R.id.button1);
 		button.setOnTouchListener(myListener);
 		
+		//check if should popup
+		boolean helpme = sPrefs.getBoolean("help_me", false);
+		if (helpme)
+		{
+			//popup
+		}
+		
+		//set up shared prefs
 		SharedPreferences.Editor editor = sPrefs.edit();
 		editor.putBoolean("MeasureX", true);
 		editor.putBoolean("MeasureY", false);
@@ -323,7 +331,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		wnf.setMaximumFractionDigits(1);
 		
 		String truncate;
-		if(d == -1.0) truncate = "-1.0"; 
+//		if(d == -1.0) truncate = "-1.0";
 		if(d == 0) truncate = "0.0";
 		else
 		{			
@@ -334,6 +342,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		{
 			pi_string = "Error. Try Again.";
 		}
+		else if(d < 0) pi_string = "Error. Try Again.";
 		else
 		{
 			//get shared setting for measurement units
