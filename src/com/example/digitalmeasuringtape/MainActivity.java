@@ -340,9 +340,9 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		
 		if (d == Float.NaN)
 		{
-			pi_string = "Error. Try Again.";
+			pi_string = "NaN. Try Again.";
 		}
-		else if(d < 0) pi_string = "Error. Try Again.";
+		else if(d < 0) pi_string = "Eh, Try Again.";
 		else
 		{
 			//get shared setting for measurement units
