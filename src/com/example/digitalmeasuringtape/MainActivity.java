@@ -48,6 +48,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	public ProgressWheel pw;
 	public MainActivity me = this;
 	
+	//when android exits program, unregister listeners
 	protected void onExit()
 	{
 		if(mSensorManager != null)
@@ -63,6 +64,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		tv = (TextView) this.findViewById(R.id.text1);
 		tv.setText("--");
 		
+		//initialize values
 		sPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 		physics = new PhysicsManager(this);
 		
@@ -86,11 +88,9 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		editor.putBoolean("MeasureX", true);
 		editor.putBoolean("MeasureY", false);
 		editor.putBoolean("MeasureZ", false);
-		
 		editor.putBoolean("Eulers", false);
 		editor.putBoolean("ImprovedEulers", false);
 		editor.putBoolean("Simpsons", true);
-		
 		editor.putBoolean("PathMode", false);
 		editor.commit();
 		
@@ -116,12 +116,14 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		calibrating = true;
 		System.out.println("Return from registerlistener: " + worked );
 		
+		//sleep thread and allow values to be collected
 		try {
 			Thread.sleep(2000);
 			System.out.println("after sleep");
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		//if the time is up but for some reason we think we're still calibrating, unregister the listener
 		if (calibrating)
 		{
 			mSensorManager.unregisterListener(this, mAccelerometer);
@@ -157,21 +159,14 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		System.out.println("end calibrate");
 	}
 	
-	@Override
-	protected void onRestart(){
-		super.onRestart();
-		//reset text view
-//		tv = (TextView) this.findViewById(R.id.text1);
-//		tv.setText("--");		
-	}
-	
-	//temporary to make sure this app isn't the one draining my battery...
+	//destroy so that app doesn't drain battery
 	@Override
 	protected void onStop(){
 		super.onStop();
 		onDestroy();
 	}
 	
+	//set up count down timer for raygun calibrating
 	final CountDownTimer Count = new CountDownTimer(2000, 30){
 		public void onTick(long millisUntilFinished){
 			//counting down
@@ -192,14 +187,10 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 			System.out.println("calibration finish");
         	pw.stopSpinning();
         	pw.resetCount();
-			//start recording
-			if (buttonDown)
-			{
-				start_distance_process();
-			}
 		}
 	};
 	
+	//set up listener for button
 	private OnTouchListener myListener = new OnTouchListener(){
 	    @Override
 		public boolean onTouch(View v, MotionEvent event) {
@@ -208,6 +199,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	        	buttonDown = true;
 	        	Count.start();
 	        	System.out.println("DOWN");
+	        	//thread hack, heh.
 				Thread thread = new Thread(me);
 				System.out.println("Started distance process.");
 				thread.start();
@@ -223,17 +215,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	        return true;
 	    }
 	};
-	
-	//connected to button's onClick
-	public void start_distance_process(){
-		//start thread
-//		if (buttonDown)
-//		{
-//			Thread thread = new Thread(this);
-//			System.out.println("Started distance process.");
-//			thread.start();
-//		}
-	}
+
 	
 /************menu stuff**************/
 	@Override
@@ -246,8 +228,6 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item){
 		switch (item.getItemId()){
-//		case R.id.about_menuitem:
-//			startActivity(new Intent(this, About.class));
 		case R.id.settings_menuitem:
 			startActivity(new Intent(this, Settings.class));
 		}
@@ -285,12 +265,13 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		measurements.trim(greatestX);
 		measurements.unravel();
 		
-		//saving data		
-		String xString = measurements.listToString(measurements.xData, "x");
-		String yString = measurements.listToString(measurements.yData, "y");
-		String tString = measurements.listToString(measurements.tData, "t");
-		measurements.writeGraph("graphs.csv", xString, yString, tString);
+		//saving data; dev only		
+//		String xString = measurements.listToString(measurements.xData, "x");
+//		String yString = measurements.listToString(measurements.yData, "y");
+//		String tString = measurements.listToString(measurements.tData, "t");
+//		measurements.writeGraph("graphs.csv", xString, yString, tString);
 		
+		//determine which measurement mode is necessary; deprecated functions here; remove measuring other axes
 		double d;
 		d = 0;
 		if (!sPrefs.getBoolean("MeasureY",false))
@@ -321,23 +302,23 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 					 				measurements.tData);
 		}
 		
-		//d.toString(), then truncate to two decimal places
+		//set up format for decimal places
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMinimumFractionDigits(1);
 		nf.setMaximumFractionDigits(3);
 		
+		//set up output for integers
 		NumberFormat wnf = NumberFormat.getInstance();
 		wnf.setMinimumFractionDigits(0);
 		wnf.setMaximumFractionDigits(1);
 		
 		String truncate;
-//		if(d == -1.0) truncate = "-1.0";
 		if(d == 0) truncate = "0.0";
 		else
 		{			
 			truncate = nf.format(d);
 		}
-		
+		//handle NaN
 		if (d == Float.NaN)
 		{
 			pi_string = "NaN. Try Again.";
