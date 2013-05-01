@@ -13,27 +13,8 @@
 		    android:key="meas_units"
 		    android:entries="@array/settings_units"
 		    android:entryValues="@array/settings_units_values" />
-    </PreferenceCategory>
+    </PreferenceCategory>        
 <!--    <PreferenceCategory
-        android:title="Calibration">
-        <Preference
-            android:title="Calibrate"
-            android:summary="Set up accelerometer to be more accurate" 
-            android:key="run_calibrate">
-              <intent
-                  android:action="android.intent.action.MAIN"
-                  android:targetPackage="com.example.digitalmeasuringtape"
-                  android:targetClass="com.example.digitalmeasuringtape.Calibrate" />
-              </Preference>
-        <CheckBoxPreference
-            android:key="calibrated_pref_check"
-            android:title="Calibrated"
-            android:summary="has this device been calibrated?"
-            android:defaultValue="false"
-            />
-    </PreferenceCategory>
-     -->            
-    <PreferenceCategory
         android:title="Measurement Axis">
         <Preference
         android:title="Axis" 
@@ -53,6 +34,7 @@
             android:defaultValue="false"
             />
     </PreferenceCategory>
+ -->
     <PreferenceCategory
         android:title="Help">
             <Preference
