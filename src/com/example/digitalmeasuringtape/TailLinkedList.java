@@ -126,7 +126,7 @@ public class TailLinkedList {
   }
   
   public ArrayList<Float> smooth(ArrayList<Float> input){
-	  //implementation of basic moving average; m = 1
+	  //implementation of basic moving average; m = 2
 	  ArrayList<Float> sData = new ArrayList<Float>();
 	  float p;
 	  float p2;
