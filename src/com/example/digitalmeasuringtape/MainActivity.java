@@ -21,12 +21,15 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.text.Html;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.TextView;
 
 public class MainActivity extends Activity implements Runnable, SensorEventListener{
@@ -47,6 +50,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 								//is called enough times, which will be 1
 	public ProgressWheel pw;
 	public MainActivity me = this;
+	public CheckBox dontShowAgain;
 	
 	//when android exits program, unregister listeners
 	protected void onExit()
@@ -76,12 +80,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		Button button = (Button)findViewById(R.id.button1);
 		button.setOnTouchListener(myListener);
 		
-		//check if should popup
-		boolean helpme = sPrefs.getBoolean("help_me", false);
-		if (helpme)
-		{
-			//popup
-		}
+		needHelp();
 		
 		//set up shared prefs
 		SharedPreferences.Editor editor = sPrefs.edit();
@@ -97,6 +96,52 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		//set up progress wheel settings
 		 pw = (ProgressWheel) findViewById(R.id.pw_spinner);
 		 pw.setSpinSpeed(50);
+	}
+	
+	protected void onRestart(){
+		super.onRestart();
+		needHelp();
+	}
+	
+	public void needHelp(){
+		//check if should popup
+		boolean helpme = sPrefs.getBoolean("helpme", false);
+		final Intent help_intent = new Intent(this, Help.class);
+		if (helpme)
+		{
+			//popup
+			//Dialog code
+			AlertDialog.Builder adb=new AlertDialog.Builder(this);
+			        LayoutInflater adbInflater = LayoutInflater.from(this);
+			        View eulaLayout = adbInflater.inflate(R.layout.checkbox, null);
+			        dontShowAgain = (CheckBox)eulaLayout.findViewById(R.id.skip);
+			        adb.setView(eulaLayout);
+			        adb.setTitle("Need some help?");
+			        adb.setMessage(Html.fromHtml("Would you like a quick walkthrough?"));
+			        adb.setPositiveButton("Yes!", new DialogInterface.OnClickListener() {
+			              public void onClick(DialogInterface dialog, int which) {
+			                  boolean checkBoxResult = true;
+			                  if (dontShowAgain.isChecked())  checkBoxResult = false;
+			                    SharedPreferences.Editor editor = sPrefs.edit();
+			                    editor.putBoolean("helpme", checkBoxResult);
+			                    // Commit the edits!
+			                    editor.commit();
+			                    startActivity(help_intent);
+			                  return;
+			              } });
+			 
+			        adb.setNegativeButton("No Thanks", new DialogInterface.OnClickListener() {
+			          public void onClick(DialogInterface dialog, int which) {
+			              boolean checkBoxResult = true;
+			              if (dontShowAgain.isChecked())  checkBoxResult = false;
+			                SharedPreferences.Editor editor = sPrefs.edit();
+			                editor.putBoolean("helpme", checkBoxResult);
+			                // Commit the edits!
+			                editor.commit();
+			                  return;
+			          } });
+			        adb.show();
+		}
 	}
 	
 	public void Calibrate()
@@ -401,7 +446,7 @@ public class MainActivity extends Activity implements Runnable, SensorEventListe
 		
 		System.out.println("returning from Collect()");
 		}
-    
+	
 	// manages user touching the screen
     public boolean stopMeasuring(MotionEvent event) {
         

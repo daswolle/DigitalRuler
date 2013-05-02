@@ -47,10 +47,10 @@
                   android:targetClass="com.example.digitalmeasuringtape.Help" />
               </Preference>
             <CheckBoxPreference
-            android:key="help_me"
+            android:key="helpme"
             android:title="Show Help Popup"
             android:summary="Popup on start with a help message"
-            android:defaultValue="false"
+            android:defaultValue="true"
             />
     </PreferenceCategory>
 </PreferenceScreen>
